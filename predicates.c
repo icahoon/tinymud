@@ -15,26 +15,26 @@ void pronoun_substitute(char *result, dbref player, const char *str);
 int can_link_to(dbref who, object_flag_type what, dbref where)
 {
     return(where >= 0 &&
-	   where < db_top &&
-	   Typeof(where) == TYPE_ROOM &&
-	   (controls(who, where) ||
-	    (what == NOTYPE &&
-	     (Flag(where,LINK_OK|ABODE))) ||
-	    (what == TYPE_ROOM &&
-	     (Flag(where,ABODE))) ||
-	    (what == TYPE_EXIT &&
-	     (Flag(where,LINK_OK))) ||
-	    ((what == TYPE_PLAYER || what == TYPE_THING) &&
+           where < db_top &&
+           Typeof(where) == TYPE_ROOM &&
+           (controls(who, where) ||
+            (what == NOTYPE &&
+             (Flag(where,LINK_OK|ABODE))) ||
+            (what == TYPE_ROOM &&
+             (Flag(where,ABODE))) ||
+            (what == TYPE_EXIT &&
+             (Flag(where,LINK_OK))) ||
+            ((what == TYPE_PLAYER || what == TYPE_THING) &&
 #ifdef ROBOT_MODE
-	     (what != TYPE_PLAYER || !Robot(who) || !Robot(where)) &&
+             (what != TYPE_PLAYER || !Robot(who) || !Robot(where)) &&
 #endif /* ROBOT_MODE */
-	     Flag(where,ABODE))));
+             Flag(where,ABODE))));
     }
 
 /*
  * Check whether a player can perform an action...robotic players are
  * now implicitly barred from performing actions on things with the
- * robot flag set.	5/18/90 - Fuzzy
+ * robot flag set.        5/18/90 - Fuzzy
  */
 
 int could_doit(dbref player, dbref thing)
@@ -63,51 +63,51 @@ int can_doit(dbref player, dbref thing, const char *default_fail_msg)
     if((loc = getloc(player)) == NOTHING) return 0;
 
     if(!could_doit(player, thing)) {
-	/* can't do it */
-	if(db[thing].fail_message) {
-	    notify(player, db[thing].fail_message);
-	} else if(default_fail_msg) {
-	    notify(player, default_fail_msg);
-	}
-	
-	if(db[thing].ofail && !Dark(player)) {
-#ifdef GENDER
-	    pronoun_substitute(buf, player, db[thing].ofail);
-#else	    
-	    sprintf(buf, "%s %s", db[player].name, db[thing].ofail);
-#endif /* GENDER */
-	    notify_except(db[loc].contents, player, buf);
-	}
+        /* can't do it */
+        if(db[thing].fail_message) {
+            notify(player, db[thing].fail_message);
+        } else if(default_fail_msg) {
+            notify(player, default_fail_msg);
+        }
 
-	return 0;
-    } else {
-	/* can do it */
-	if(db[thing].succ_message) {
-	    notify(player, db[thing].succ_message);
-	}
-
-	if(db[thing].osuccess && !Dark(player)) {
+        if(db[thing].ofail && !Dark(player)) {
 #ifdef GENDER
-	    pronoun_substitute(buf, player, db[thing].osuccess);
+            pronoun_substitute(buf, player, db[thing].ofail);
 #else
-	    sprintf(buf, "%s %s", db[player].name, db[thing].osuccess);
+            sprintf(buf, "%s %s", db[player].name, db[thing].ofail);
 #endif /* GENDER */
-	    notify_except(db[loc].contents, player, buf);
-	}
+            notify_except(db[loc].contents, player, buf);
+        }
 
-	return 1;
+        return 0;
+    } else {
+        /* can do it */
+        if(db[thing].succ_message) {
+            notify(player, db[thing].succ_message);
+        }
+
+        if(db[thing].osuccess && !Dark(player)) {
+#ifdef GENDER
+            pronoun_substitute(buf, player, db[thing].osuccess);
+#else
+            sprintf(buf, "%s %s", db[player].name, db[thing].osuccess);
+#endif /* GENDER */
+            notify_except(db[loc].contents, player, buf);
+        }
+
+        return 1;
     }
 }
 
 int can_see(dbref player, dbref thing, int can_see_loc)
 {
     if(player == thing || Typeof(thing) == TYPE_EXIT) {
-	return 0;
+        return 0;
     } else if(can_see_loc) {
-	return(!Dark(thing) || controls(player, thing));
+        return(!Dark(thing) || controls(player, thing));
     } else {
-	/* can't see loc */
-	return(controls(player, thing));
+        /* can't see loc */
+        return(controls(player, thing));
     }
 }
 
@@ -116,26 +116,26 @@ int controls(dbref who, dbref what)
     /* Wizard controls everything */
     /* owners control their stuff */
     return(what >= 0
-	   && what < db_top
-	   && (Wizard(who)
-	       || who == db[what].owner));
+           && what < db_top
+           && (Wizard(who)
+               || who == db[what].owner));
 }
 
 int can_link(dbref who, dbref what)
 {
     return((Typeof(what) == TYPE_EXIT && db[what].location == NOTHING)
-	   || controls(who, what));
+           || controls(who, what));
 }
 
 int payfor(dbref who, int cost)
 {
     if(Wizard(who)) {
-	return 1;
+        return 1;
     } else if(db[who].pennies >= cost) {
-	db[who].pennies -= cost;
-	return 1;
+        db[who].pennies -= cost;
+        return 1;
     } else {
-	return 0;
+        return 0;
     }
 }
 
@@ -144,8 +144,8 @@ int word_start (const char *str, const char let)
     int chk;
 
     for (chk = 1; *str; str++) {
-	if (chk && *str == let) return 1;
-	chk = *str == ' ';
+        if (chk && *str == let) return 1;
+        chk = *str == ' ';
     }
     return 0;
 }
@@ -154,26 +154,26 @@ int word_start (const char *str, const char let)
 int ok_name(const char *name)
 {
     return (name
-	    && *name
-	    && *name != LOOKUP_TOKEN
-	    && *name != NUMBER_TOKEN
-	    && !index(name, ARG_DELIMITER)
-	    && !index(name, AND_TOKEN)
-	    && !index(name, OR_TOKEN)
-	    && !word_start(name, NOT_TOKEN)
+            && *name
+            && *name != LOOKUP_TOKEN
+            && *name != NUMBER_TOKEN
+            && !index(name, ARG_DELIMITER)
+            && !index(name, AND_TOKEN)
+            && !index(name, OR_TOKEN)
+            && !word_start(name, NOT_TOKEN)
 #ifdef NOFAKES
-	    && string_compare(name, "A")
-	    && string_compare(name, "An")
-	    && string_compare(name, "The")
-	    && string_compare(name, "You")
-	    && string_compare(name, "Your")
-	    && string_compare(name, "Going")
-    	    && string_compare(name, "Huh?")
-    	    && string_compare(name, "[")
+            && string_compare(name, "A")
+            && string_compare(name, "An")
+            && string_compare(name, "The")
+            && string_compare(name, "You")
+            && string_compare(name, "Your")
+            && string_compare(name, "Going")
+                && string_compare(name, "Huh?")
+                && string_compare(name, "[")
 #endif /* NOFAKES */
-	    && string_compare(name, "me")	    
-	    && string_compare(name, "home")
-	    && string_compare(name, "here"));
+            && string_compare(name, "me")
+            && string_compare(name, "home")
+            && string_compare(name, "here"));
 }
 
 int ok_player_name(const char *name)
@@ -183,9 +183,9 @@ int ok_player_name(const char *name)
     if(!ok_name(name) || strlen(name) > PLAYER_NAME_LIMIT) return 0;
 
     for(scan = name; *scan; scan++) {
-	if(!(isprint(*scan) && !isspace(*scan))) { /* was isgraph(*scan) */
-	    return 0;
-	}
+        if(!(isprint(*scan) && !isspace(*scan))) { /* was isgraph(*scan) */
+            return 0;
+        }
     }
 
     /* lookup name to avoid conflicts */
@@ -199,9 +199,9 @@ int ok_password(const char *password)
     if(*password == '\0') return 0;
 
     for(scan = password; *scan; scan++) {
-	if(!(isprint(*scan) && !isspace(*scan))) {
-	    return 0;
-	}
+        if(!(isprint(*scan) && !isspace(*scan))) {
+            return 0;
+        }
     }
 
     return 1;
@@ -233,66 +233,66 @@ void pronoun_substitute(char *result, dbref player, const char *str)
     result += strlen(result);
     *result++ = ' ';
     while (*str) {
-	if(*str == '%') {
-	    *result = '\0';
-	    c = *(++str);
-	    if (Genderof(player) == GENDER_UNASSIGNED) {
-		switch(c) {
-		  case 'n':
-		  case 'N':
-		  case 'o':
-		  case 'O':
-		  case 's':
-		  case 'S':
-		    strcat(result, db[player].name);
-		    break;
-		  case 'p':
-		  case 'P':
-		    strcat(result, db[player].name);
-		    strcat(result, "'s");
-		    break;
-		  default:
-		    result[0] = *str;
-		    result[1] = 0;
-		    break;
-		}
-		str++;
-		result += strlen(result);
-	    } else {
-		switch (c) {
-		  case 's':
-		  case 'S':
-		    strcat(result, subjective[Genderof(player)]);
-		    break;
-		  case 'p':
-		  case 'P':
-		    strcat(result, possessive[Genderof(player)]);
-		    break;
-		  case 'o':
-		  case 'O':
-		    strcat(result, objective[Genderof(player)]);
-		    break;
-		  case 'n':
-		  case 'N':
-		    strcat(result, db[player].name);
-		    break;
-		  default:
-		    *result = *str;
-		    result[1] = '\0';
-		    break;
-		} 
-		if(isupper(c) && islower(*result)) {
-		    *result = toupper(*result);
-		}
-		
-		result += strlen(result);
-		str++;
-	    }
-	} else {
-	    *result++ = *str++;
-	}
+        if(*str == '%') {
+            *result = '\0';
+            c = *(++str);
+            if (Genderof(player) == GENDER_UNASSIGNED) {
+                switch(c) {
+                  case 'n':
+                  case 'N':
+                  case 'o':
+                  case 'O':
+                  case 's':
+                  case 'S':
+                    strcat(result, db[player].name);
+                    break;
+                  case 'p':
+                  case 'P':
+                    strcat(result, db[player].name);
+                    strcat(result, "'s");
+                    break;
+                  default:
+                    result[0] = *str;
+                    result[1] = 0;
+                    break;
+                }
+                str++;
+                result += strlen(result);
+            } else {
+                switch (c) {
+                  case 's':
+                  case 'S':
+                    strcat(result, subjective[Genderof(player)]);
+                    break;
+                  case 'p':
+                  case 'P':
+                    strcat(result, possessive[Genderof(player)]);
+                    break;
+                  case 'o':
+                  case 'O':
+                    strcat(result, objective[Genderof(player)]);
+                    break;
+                  case 'n':
+                  case 'N':
+                    strcat(result, db[player].name);
+                    break;
+                  default:
+                    *result = *str;
+                    result[1] = '\0';
+                    break;
+                }
+                if(isupper(c) && islower(*result)) {
+                    *result = toupper(*result);
+                }
+
+                result += strlen(result);
+                str++;
+            }
+        } else {
+            *result++ = *str++;
+        }
     }
     *result = '\0';
-} 
+}
 
 #endif /* GENDER */

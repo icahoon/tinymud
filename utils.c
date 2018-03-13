@@ -9,23 +9,23 @@ dbref remove_first(dbref first, dbref what)
 
     /* special case if it's the first one */
     if(first == what) {
-	return db[first].next;
+        return db[first].next;
     } else {
-	/* have to find it */
-	DOLIST(prev, first) {
-	    if(db[prev].next == what) {
-		db[prev].next = db[what].next;
-		return first;
-	    }
-	}
-	return first;
+        /* have to find it */
+        DOLIST(prev, first) {
+            if(db[prev].next == what) {
+                db[prev].next = db[what].next;
+                return first;
+            }
+        }
+        return first;
     }
 }
 
 int member(dbref thing, dbref list)
 {
     DOLIST(list, list) {
-	if(list == thing) return 1;
+        if(list == thing) return 1;
     }
 
     return 0;
@@ -38,9 +38,9 @@ dbref reverse(dbref list)
 
     newlist = NOTHING;
     while(list != NOTHING) {
-	rest = db[list].next;
-	PUSH(list, newlist);
-	list = rest;
+        rest = db[list].next;
+        PUSH(list, newlist);
+        list = rest;
     }
     return newlist;
 }

@@ -14,17 +14,17 @@ int spit_file(dbref player, const char *filename)
     char *p;
 
     if((f = fopen(filename, "r")) == NULL) {
-	return (0);
+        return (0);
     } else {
-	while(fgets(buf, sizeof buf, f)) {
-	    for(p = buf; *p; p++) if(*p == '\n') {
-		*p = '\0';
-		break;
-	    }
-	    notify(player, buf);
-	}
-	fclose(f);
-	return (1);
+        while(fgets(buf, sizeof buf, f)) {
+            for(p = buf; *p; p++) if(*p == '\n') {
+                *p = '\0';
+                break;
+            }
+            notify(player, buf);
+        }
+        fclose(f);
+        return (1);
     }
 }
 
@@ -33,7 +33,7 @@ void do_help(dbref player)
     if (!spit_file(player, HELP_FILE))
     { notify(player, "Sorry, the help file is missing right now.");
       writelog("GRIPE automatically generated for %s(%d): no help file %s\n",
-	       db[player].name, player, HELP_FILE);      
+               db[player].name, player, HELP_FILE);
     }
 }
 
