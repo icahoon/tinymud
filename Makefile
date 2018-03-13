@@ -12,7 +12,8 @@
 #OPTIM= -g -W -Wreturn-type -Wunused -Wcomment -Wwrite-strings
 
 # Systems with 'cc' built from GCC (IBM RT, NeXT):
-CC=cc
+CC=gcc
+#CC=clang
 OPTIM=-g
 
 # Dec 3100 C compiler
@@ -77,7 +78,7 @@ DEFS= -DGOD_PRIV -DCOMPRESS -DQUIET_WHISPER -DGENDER -DHOST_NAME \
       -DCONNECT_MESSAGES -DPLAYER_LIST -DDETACH -DROBOT_MODE \
       -DRECYCLE -DTINKER -DNOFAKES -DTIMESTAMPS -DISLANDIA
 
-CFLAGS= $(OPTIM) $(DEFS)
+CFLAGS= $(OPTIM) $(DEFS) #-Wall -Werror
 
 # Everything needed to use db.c
 DBFILES= db.c compress.c player_list.c stringutil.c
