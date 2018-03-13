@@ -70,7 +70,7 @@ int             port = TINYPORT;
 int             intport = INTERNAL_PORT;
 int             clvl = 1;
 
-void main(int argc, char *argv[])
+int main(int argc, char *argv[])
 {
   int             l;
 
@@ -81,13 +81,14 @@ void main(int argc, char *argv[])
   if (argc > 3)
     clvl = atoi(argv[3]);
 
-  signal(SIGPIPE, SIG_IGN);               /* Ignore I/O signals */
-  for (l = 3; l < NOFILE; ++l)               /* Close all files from last process */
-    close(l);                               /* except stdin, stdout, stderr */
+  signal(SIGPIPE, SIG_IGN);              /* Ignore I/O signals */
+  for (l = 3; l < NOFILE; ++l)           /* Close all files from last process */
+    close(l);                            /* except stdin, stdout, stderr */
   pid = 1;
-  connect_mud();                       /* Connect to interface.c */
+  connect_mud();                         /* Connect to interface.c */
   setup();                               /* Setup listen port */
-  mainloop();                               /* main loop */
+  mainloop();                            /* main loop */
+  return 0;
 }
 
 void connect_mud()
@@ -170,26 +171,26 @@ void setup()
 
 void mainloop()
 {
-  int             found, newsock, lastsock, len, loop;
-  int             accepting = 1, current = 0;
+  int                   found, newsock, lastsock, loop;
+  unsigned int          len;
+  int                   accepting = 1;
+#ifdef CONCTIMEOUT
   long                  closedat = 0, now = 0, lasttime = 0;
-  int                  warn = 0;
-  int             temp;
-  struct timeval  tv;
-  struct sockaddr_in sin;
-  struct hostent *hent;
-  fd_set          in, out;
-  char           *data;
-  char           *buf, header[4];
-  struct conc_list *cptr;
-  struct message *tmsg;
-  short           templen;
-  char           *mainbuf, *outbuf;
-  int             mainlen, outlen;
-  int             command;
-  int             hlen;
-  char           *hostnm;
+  int                   warn = 0;
   char                  warnmsg[512];
+#endif
+  int                   temp;
+  struct timeval        tv;
+  struct sockaddr_in    sin;
+  struct hostent        *hent;
+  fd_set                in, out;
+  char                  *data;
+  struct conc_list      *cptr;
+  struct message        *tmsg;
+  short                 templen;
+  char                  *mainbuf, *outbuf;
+  int                   mainlen, outlen;
+  int                   command;
 
   /* Allocate huge buffer */
   data = (char *)malloc(65536);
@@ -234,7 +235,7 @@ void mainloop()
       sprintf(pstr, "%d", port);
       sprintf(istr, "%d", intport);
       sprintf(cstr, "%d", clvl + 1);
-      execlp("concentrate", "conc", pstr, istr, cstr, 0);
+      execlp("concentrate", "conc", pstr, istr, cstr, (char *)0);
       writelog("CONC %d:ACK!!!!!! exec failed! Exiting...\n", clvl);
       exit(1);
       /* Gee...now what? Should I try again? */
@@ -310,7 +311,9 @@ void mainloop()
       {
         close(sock);
         accepting = 0;
+#ifdef CONCTIMEOUT
         closedat = time (0);
+#endif
         pid = -1;
       }
       if (newsock >= lastsock)
@@ -397,11 +400,6 @@ void mainloop()
           {
             disconnect(loop);
           } else
-          if (len < 0)
-          {
-            /* Hmm..... */
-            writelog("CONC %d: recv: %s\n", clvl, strerror(errno));
-          } else
           {
             /* Add the port # to the data, and send it to interface.c */
             data[0] = loop;
@@ -419,12 +417,14 @@ void mainloop()
         command = *(cptr->first->data);
         switch (command)
         {
-        case 2:                       /* disconnect */
-          if (clist[*(cptr->first->data + 1)].status)
-            clist[*(cptr->first->data + 1)].status = 2;
+        case 2: {                     /* disconnect */
+          int i = *(cptr->first->data + 1);
+          if (clist[i].status)
+            clist[i].status = 2;
           else
             writelog("CONC %d: Received disconnect for unknown user\n", clvl);
           break;
+        }
         default:
           writelog("CONC %d: Received unknown command %d\n", clvl, command);
           break;
@@ -568,8 +568,6 @@ void panic()
 void writelog(const char *fmt, ...)
 {
   va_list         list;
-  struct tm      *tm;
-  long            t;
   char            buffer[2048];
 
   va_start(list, fmt);

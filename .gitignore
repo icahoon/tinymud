@@ -1,10 +1,10 @@
-./concentrate
-./decompress
-./dump
-./extract
-./netmud
-./netmud.conc
-./sanity-check
+concentrate
+decompress
+dump
+extract
+netmud
+netmud.conc
+sanity-check
 
 *.log
 *.dump

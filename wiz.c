@@ -641,7 +641,7 @@ long atosec (const char *str)
 
     num = atol (str);
 
-    for (s=str; *s && isspace (*s) || isdigit (*s); s++) ;
+    for (s=str; *s && (isspace (*s) || isdigit (*s)); s++) ;
 
     switch (*s) {
       case '\0':
@@ -650,11 +650,10 @@ long atosec (const char *str)
 
       case 'm':
       case 'M':                if (s[1] == 'i' || s[1] == 'I') {
-                            return (num * MINUTES); break;
-                              } else {
-                            return (num * MONTHS); break;
-                        }
-
+                                 return (num * MINUTES); break;
+                               } else {
+                                 return (num * MONTHS); break;
+                               }
       case 'h':
       case 'H':                return (num * HOURS); break;
 
@@ -667,7 +666,7 @@ long atosec (const char *str)
       case 'y':
       case 'Y':                return (num * YEARS); break;
 
-      default:                return (num);
+      default:                 return (num);
     }
 }
 
@@ -679,7 +678,6 @@ void do_date(dbref player, const char *start, const char *thstr)
     dbref players=0, aplayers=0;
     dbref total=0, atotal=0;
     dbref i;
-    dbref owner;
     long now, start_tm, thresh;
     char buf[BUFFER_LEN];
 
@@ -717,7 +715,7 @@ void do_date(dbref player, const char *start, const char *thstr)
     if (thresh == 0) {
         sprintf (buf, "Objects used since %20.20s:", ctime (&start_tm)+4);
     } else {
-        sprintf (buf, "Objects used more than %d time%s since %20.20s:",
+        sprintf (buf, "Objects used more than %ld time%s since %20.20s:",
                  thresh, (thresh == 1) ? "" : "s", ctime (&start_tm)+4);
     }
     notify (player, buf);
@@ -801,21 +799,21 @@ void do_top(dbref player, const char *numstr, const char *typestr)
 
     /* Now print the items */
     switch (type) {
-      case NOTHING:        sprintf (buf, "The top %d items:", num);
+      case NOTHING:        sprintf (buf, "The top %ld items:", num);
                               break;
-      case TYPE_PLAYER:        sprintf (buf, "The top %d most active players:", num);
+      case TYPE_PLAYER:        sprintf (buf, "The top %ld most active players:", num);
                               break;
-      case TYPE_ROOM:        sprintf (buf, "The top %d most active rooms:", num);
+      case TYPE_ROOM:        sprintf (buf, "The top %ld most active rooms:", num);
                               break;
-      case TYPE_EXIT:        sprintf (buf, "The top %d most used exits:", num);
+      case TYPE_EXIT:        sprintf (buf, "The top %ld most used exits:", num);
                               break;
-      case TYPE_THING:        sprintf (buf, "The top %d most used things:", num);
+      case TYPE_THING:        sprintf (buf, "The top %ld most used things:", num);
                               break;
     }
     notify (player, buf);
 
     for (j=0; j<num && top[j] != NOTHING; j++) {
-        sprintf (buf, "%10d  %s", db[top[j]].usecnt,
+        sprintf (buf, "%10ld  %s", db[top[j]].usecnt,
                  unparse_object (player, top[j]));
         notify (player, buf);
     }

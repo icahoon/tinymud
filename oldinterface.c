@@ -108,14 +108,14 @@ int logsynch (int, int, struct sigcontext *);
 
 char *logfile = LOG_FILE;
 
-#define MALLOC(result, type, number) do {                        \
-        if (!((result) = (type *) malloc ((number) * sizeof (type))))        \
-                panic("Out of memory");                                \
+#define MALLOC(result, type, number) do { \
+        if (!((result) = (type *) malloc ((number) * sizeof (type)))) \
+                panic("Out of memory"); \
         } while (0)
 
 #define FREE(x) (free((void *) x))
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     if (argc < 3) {
         fprintf(stderr, "Usage: %s infile dumpfile [port [logfile]]\n", *argv);
@@ -124,17 +124,17 @@ void main(int argc, char **argv)
 
     if (argc > 4) logfile = argv[4];
 
-    set_signals ();
+    set_signals();
     if (init_game (argv[1], argv[2]) < 0) {
         writelog("INIT: Couldn't load %s!\n", argv[1]);
-        exit (2);
+        exit(2);
     }
 
     /* go do it */
-    shovechars (argc >= 4 ? atoi (argv[3]) : TINYPORT);
-    close_sockets ();
-    dump_database ();
-    exit (0);
+    shovechars(argc >= 4 ? atoi (argv[3]) : TINYPORT);
+    close_sockets();
+    dump_database();
+    return 0;
 }
 
 void set_signals(void)
@@ -343,10 +343,10 @@ struct descriptor_data *new_connection(int sock)
 {
     int newsock;
     struct sockaddr_in addr;
-    int addr_len;
+    unsigned int addr_len;
 
     addr_len = sizeof (addr);
-    newsock = accept (sock, (struct sockaddr *) & addr, &addr_len);
+    newsock = accept (sock, (struct sockaddr *)&addr, &addr_len);
     if (newsock < 0) {
         return 0;
 #ifdef LOCKOUT
@@ -558,7 +558,7 @@ int process_output(struct descriptor_data *d)
     struct text_block **qp, *cur;
     int cnt;
 
-    for (qp = &d->output.head; cur = *qp;) {
+    for (qp = &d->output.head; (cur = *qp) != 0;) {
         cnt = write (d->descriptor, cur -> start, cur -> nchars);
         if (cnt < 0) {
             if (errno == EWOULDBLOCK)
@@ -973,7 +973,7 @@ void dump_users(struct descriptor_data *e, char *user)
 #endif
             }
             else
-            { sprintf (flagbuf, ""); }
+            { flagbuf[0] = '\0'; }
 
             if (tabular) {
                 sprintf(buf,"%-16s %10s %4s",
@@ -985,7 +985,7 @@ void dump_users(struct descriptor_data *e, char *user)
                             "  %s%s", flagbuf, d->hostname);
             } else {
                 sprintf(buf,
-                        "%s idle %d seconds",
+                        "%s idle %ld seconds",
                         db[d->player].name,
                         now - d->last_time);
                 if (wizard)
@@ -1066,7 +1066,6 @@ int do_connect_msg(struct descriptor_data * d, const char *filename)
 {
   FILE           *f;
   char            buf[BUFFER_LEN];
-  char           *p;
 
   if ((f = fopen(filename, "r")) == NULL)
   {

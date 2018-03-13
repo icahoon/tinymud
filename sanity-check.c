@@ -27,7 +27,7 @@ void check_exits(dbref i)
         db[exit].flags = 4;        /* nonexistent type */
 
         if(count-- < 0) {
-            printf("%d has looping exits\n");
+            printf("%d has looping exits\n", exit);
             break;
         }
     }
@@ -52,7 +52,7 @@ void check_contents(dbref i)
             printf("%d in %d but location is %d\n", thing, i, loc);
         }
         if(count-- < 0) {
-            printf("%d has looping contents\n");
+            printf("%d has looping contents\n", thing);
             break;
         }
     }
@@ -105,7 +105,7 @@ void check_pennies(dbref i)
     }
 }
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     dbref i;
 
@@ -178,5 +178,5 @@ void main(int argc, char **argv)
         }
     }
 
-    exit(0);
+    return 0;
 }

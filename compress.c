@@ -47,7 +47,9 @@ static void init_compress(void)
     }
 
     for(i = 0; i < NUM_TOKENS; i++) {
-        token_table[tokens[i][0]][tokens[i][1]] = i | TOKEN_BIT;
+        int n = tokens[i][0];
+        int m = tokens[i][1];
+        token_table[n][m] = i | TOKEN_BIT;
     }
 
     table_initialized = 1;
@@ -73,7 +75,9 @@ const char *compress(const char *s)
 
     /* tokenize the first characters */
     for(to = buf; s[0] && s[1]; to++) {
-        if(token = token_table[s[0]][s[1]]) {
+        int n = s[0];
+        int m = s[1];
+        if ((token = token_table[n][m]) != 0) {
             *to = token;
             s += 2;
         } else {
@@ -83,7 +87,7 @@ const char *compress(const char *s)
     }
 
     /* copy the last character (if any) and null */
-    while(*to++ = *s++);
+    while((*to++ = *s++) != 0);
 
     return buf;
 }
