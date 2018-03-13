@@ -2,12 +2,13 @@
 
 #include "copyright.h"
 
+#include <stdlib.h>
+#include <ctype.h>
+
 #include "db.h"
 #include "config.h"
 #include "interface.h"
 #include "externs.h"
-
-#include <ctype.h>
 
 #define PLAYER_LIST_SIZE (1 << 12) /* must be a power of 2 */
 

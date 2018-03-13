@@ -2,19 +2,30 @@
 /* Revision 2.0 */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdarg.h>
+#include <unistd.h>
+#include <time.h>
 #include <signal.h>
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
 #include <sys/time.h>
 #include <sys/errno.h>
 #include <fcntl.h>
 #include <netdb.h>
 #include "config.h"
 
-void            queue_message(int port, char *data, int len);
-void            writelog(const char *fmt,...);
+void connect_mud();
+void setup();
+void mainloop();
+void disconnect(int user);
+void queue_message(int port, char *data, int len);
+void writelog(const char *fmt,...);
+void panic();
 
 #define BUFLEN 65536
 #define CONC_MESSAGE "[ Connected to the TinyMUD port concentrator ]\n"
@@ -59,9 +70,7 @@ int             port = TINYPORT;
 int             intport = INTERNAL_PORT;
 int             clvl = 1;
 
-main(argc, argv)
-  int             argc;
-  char           *argv[];
+void main(int argc, char *argv[])
 {
   int             l;
 
@@ -81,7 +90,7 @@ main(argc, argv)
   mainloop();			       /* main loop */
 }
 
-connect_mud()
+void connect_mud()
 {
   int             temp;
   struct sockaddr_in sin;
@@ -128,7 +137,7 @@ connect_mud()
 #endif
 }
 
-setup()
+void setup()
 {
   int             temp;
   struct sockaddr_in sin;
@@ -159,7 +168,7 @@ setup()
   }
 }
 
-mainloop()
+void mainloop()
 {
   int             found, newsock, lastsock, len, loop;
   int             accepting = 1, current = 0;
@@ -206,7 +215,7 @@ mainloop()
   }
 
   /*
-   * Accept connections flag ON accepting = 1; /* lastsock for select() 
+   * Accept connections flag ON accepting = 1; // lastsock for select() 
    */
   lastsock = sock + 1;
   /* mud_sock has already been established */
@@ -263,7 +272,7 @@ mainloop()
         }
       }
     }
-#endif CONCTIMEOUT
+#endif /* CONCTIMEOUT */
 
     /* set apropriate bit masks for I/O */
     if (accepting)
@@ -337,7 +346,8 @@ mainloop()
       if (hent)
 	strcpy(data + 7, hent->h_name);
       else
-	strcpy(data + 7, inet_ntoa(sin.sin_addr.s_addr));
+	strcpy(data + 7, inet_ntoa(sin.sin_addr));
+	/* strcpy(data + 7, inet_ntoa(sin.sin_addr.s_addr)); */
       queue_message(mud_sock, data, 7 + strlen(data + 7));
 #ifdef DEBUG
       writelog("CONC %d: USER CONNECT: sock %d, host %s\n", clvl,
@@ -498,13 +508,12 @@ mainloop()
       
       writelog ("CONC %d: TIME OUT", clvl);
     }
-#endif CONCTIMEOUT
+#endif /* CONCTIMEOUT */
   }
 }
 
 /* Properly disconnect a user */
-disconnect(user)
-  int             user;
+void disconnect(int user)
 {
   char            header[4];
 
@@ -522,7 +531,7 @@ disconnect(user)
 #endif
 }
 
-void            queue_message(int port, char *data, int len)
+void queue_message(int port, char *data, int len)
 {
   struct message *ptr;
 
@@ -539,7 +548,7 @@ void            queue_message(int port, char *data, int len)
 }
 
 /* Kill off all connections quickly */
-panic()
+void panic()
 {
   int             loop;
 
@@ -556,7 +565,7 @@ panic()
 }
 
 /* Modified to send stuff to the main server for logging */
-void            writelog(const char *fmt,...)
+void writelog(const char *fmt, ...)
 {
   va_list         list;
   struct tm      *tm;

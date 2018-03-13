@@ -2,7 +2,10 @@
 
 /* Wizard-only commands */
 
+#include <stdlib.h>
 #include <ctype.h>
+#include <time.h>
+
 #include "db.h"
 #include "config.h"
 #include "interface.h"
@@ -19,9 +22,9 @@ void do_teleport(dbref player, const char *arg1, const char *arg2)
     if(!Wizard(player)) {
 #ifndef TINKER
 	notify(player, "Only a Wizard may teleport at will.");
-#else TINKER
+#else /* TINKER */
 	notify(player, "Only a Tinker may teleport at will.");
-#endif TINKER
+#endif /* TINKER */
 	return;
     }
 #endif /* RESTRICTED_TELEPORT */
@@ -110,9 +113,9 @@ void do_mass_teleport(dbref player, const char *arg1)
     if(!God(player)) {
 #ifndef TINKER
 	notify(player, "Only God can do a mass teleport.");
-#else TINKER
+#else /* TINKER */
 	notify(player, "Only the Master Tinker can do a mass teleport.");
-#endif TINKER
+#endif /* TINKER */
 	return;
     }
 
@@ -160,9 +163,9 @@ void do_force(dbref player, const char *what, char *command)
 		  db[player].name, player, what, command);
 #ifndef TINKER
 	notify(player, "Only Wizards may use this command.");
-#else TINKER
+#else /* TINKER */
 	notify(player, "Only Tinkers may use this command.");
-#endif TINKER
+#endif /* TINKER */
 	return;
     }
 
@@ -178,18 +181,18 @@ void do_force(dbref player, const char *what, char *command)
     if(God(victim)) {
 #ifndef TINKER
 	writelog ("FORCE: failed, wizard, player %s(%d), who '%s', what '%s'\n",
-#else TINKER
+#else /* TINKER */
 	writelog ("FORCE: failed, tinker, player %s(%d), who '%s', what '%s'\n",
-#endif TINKER
+#endif /* TINKER */
 		  db[player].name, player, what, command);
 #ifndef TINKER
 	notify(player, "You can't force God.");
-#else TINKER
+#else /* TINKER */
 	notify(player, "You can't force the Master Tinker.");
-#endif TINKER
+#endif /* TINKER */
 	return;
     }
-#endif GOD_PRIV
+#endif /* GOD_PRIV */
 
     /* force victim to do command */
     writelog ("FORCE: success, player %s(%d), who '%s', what '%s'\n",
@@ -259,11 +262,11 @@ void do_bobble(dbref player, const char *name, const char *rname)
         writelog("TOAD: failed, priv %s(%d) who '%s'\n",
 		 db[player].name, player, name);
 	notify(player, "Only a Wizard can turn a person into a toad.");
-#else TINKER
+#else /* TINKER */
         writelog("BOBBLE: failed, priv %s(%d) who '%s'\n",
 		 db[player].name, player, name);
 	notify(player, "Only a Tinker can bobble a person.");
-#endif TINKER
+#endif /* TINKER */
 	return;
     }
 
@@ -271,10 +274,10 @@ void do_bobble(dbref player, const char *name, const char *rname)
 #ifndef TINKER
         writelog("TOAD: failed, syntax %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#else TINKER
+#else /* TINKER */
         writelog("BOBBLE: failed, syntax %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#endif TINKER
+#endif /* TINKER */
 	notify(player, "You must specify a victim.");
 	return;
     }
@@ -287,10 +290,10 @@ void do_bobble(dbref player, const char *name, const char *rname)
 #ifndef TINKER
         writelog("TOAD: failed, victim %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#else TINKER
+#else /* TINKER */
         writelog("BOBBLE: failed, victim %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#endif TINKER
+#endif /* TINKER */
 	notify(player, "Please specify another victim.");
 	return;
     }
@@ -311,10 +314,10 @@ void do_bobble(dbref player, const char *name, const char *rname)
 #ifndef TINKER
         writelog("TOAD: failed, recip %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#else TINKER
+#else /* TINKER */
         writelog("BOBBLE: failed, recip %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#endif TINKER
+#endif /* TINKER */
 	notify(player, "Please specify another player to own the victim's effects.");
 	return;
     }
@@ -324,39 +327,39 @@ void do_bobble(dbref player, const char *name, const char *rname)
         writelog("TOAD: failed, type %s(%d) who '%s'\n",
 		 db[player].name, player, name);
 	notify(player, "You can only turn players into toads!");
-#else TINKER
+#else /* TINKER */
         writelog("BOBBLE: failed, type %s(%d) who '%s'\n",
 		 db[player].name, player, name);
 	notify(player, "You can only bobble players!");
-#endif TINKER
+#endif /* TINKER */
     } else if(Wizard(victim)) {
 #ifndef TINKER
         writelog("TOAD: failed, wizard %s(%d) who '%s'\n",
 		 db[player].name, player, name);
 	notify(player, "You can't turn a Wizard into a toad.");
-#else TINKER
+#else /* TINKER */
         writelog("BOBBLE: failed, tinker %s(%d) who '%s'\n",
 		 db[player].name, player, name);
 	notify(player, "You can't bobble a Tinker.");
-#endif TINKER
+#endif /* TINKER */
     } else if(db[victim].contents != NOTHING) {
 #ifndef TINKER
         writelog("TOAD: failed, contents %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#else TINKER
+#else /* TINKER */
         writelog("BOBBLE: failed, contents %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#endif TINKER
+#endif /* TINKER */
 
 	notify(player, "What about what they are carrying?");
     } else {
 #ifndef TINKER
         writelog("TOAD: success %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#else TINKER
+#else /* TINKER */
         writelog("BOBBLE: success %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#endif TINKER
+#endif /* TINKER */
 
 	/* we are ok */
 	/* do it */
@@ -381,27 +384,27 @@ void do_bobble(dbref player, const char *name, const char *rname)
 #ifndef TINKER
 	sprintf(buf, "You have been turned into a toad by %s.",
 		db[player].name);
-#else TINKER
+#else /* TINKER */
 	sprintf(buf, "You have been encased in a stasis sphere by %s.",
 		db[player].name);
-#endif TINKER
+#endif /* TINKER */
 	notify(victim, buf);
 #ifndef TINKER
 	sprintf(buf, "You turned %s into a toad!", db[victim].name);
-#else TINKER
+#else /* TINKER */
 	sprintf(buf, "You bobbled %s!", db[victim].name);
-#endif TINKER
+#endif /* TINKER */
 	notify(player, buf);
 
 	/* reset name */
 #ifdef PLAYER_LIST
 	delete_player(victim);
-#endif PLAYER_LIST	
+#endif /* PLAYER_LIST	 */
 #ifndef TINKER
 	sprintf(buf, "a slimy toad named %s", db[victim].name);
-#else TINKER
+#else /* TINKER */
 	sprintf(buf, "a silvery sphere containing %s", db[victim].name);
-#endif TINKER
+#endif /* TINKER */
 	free((void *) db[victim].name);
 	db[victim].name = alloc_string(buf);
     }
@@ -417,11 +420,11 @@ void do_unbobble(dbref player, const char *name, const char *newname)
         writelog("UNTOAD: failed, priv %s(%d) who '%s'\n",
 		 db[player].name, player, name);
 	notify(player, "Only a Wizard can turn a toad into a person.");
-#else TINKER
+#else /* TINKER */
         writelog("UNBOBBLE: failed, priv %s(%d) who '%s'\n",
 		 db[player].name, player, name);
 	notify(player, "Only a Tinker can unbobble a person.");
-#endif TINKER
+#endif /* TINKER */
 	return;
     }
 
@@ -429,10 +432,10 @@ void do_unbobble(dbref player, const char *name, const char *newname)
 #ifndef TINKER
         writelog("UNTOAD: failed, syntax %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#else TINKER
+#else /* TINKER */
         writelog("UNBOBBLE: failed, syntax %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#endif TINKER
+#endif /* TINKER */
 	notify(player, "You must specify a thing.");
 	return;
     }
@@ -442,12 +445,12 @@ void do_unbobble(dbref player, const char *name, const char *newname)
         writelog("UNTOAD: failed, syntax %s(%d) who '%s'\n",
 		 db[player].name, player, name);
 	notify(player,"You must specify a new name: @untoad <thing> = <name>");
-#else TINKER
+#else /* TINKER */
         writelog("UNBOBBLE: failed, syntax %s(%d) who '%s'\n",
 		 db[player].name, player, name);
 	notify(player,
 	       "You must specify a new name: @unbobble <thing> = <name>");
-#endif TINKER
+#endif /* TINKER */
 	return;
     }
     
@@ -459,10 +462,10 @@ void do_unbobble(dbref player, const char *name, const char *newname)
 #ifndef TINKER
         writelog("UNTOAD: failed, victim %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#else TINKER
+#else /* TINKER */
         writelog("UNBOBBLE: failed, victim %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#endif TINKER
+#endif /* TINKER */
 	notify(player, "Please specify another thing.");
 	return;
     }
@@ -472,28 +475,28 @@ void do_unbobble(dbref player, const char *name, const char *newname)
         writelog("UNTOAD: failed, type %s(%d) who '%s'\n",
 		 db[player].name, player, name);
 	notify(player, "You can only turn players into toads!");
-#else TINKER
+#else /* TINKER */
         writelog("UNBOBBLE: failed, type %s(%d) who '%s'\n",
 		 db[player].name, player, name);
 	notify(player, "You can only bobble players!");
-#endif TINKER
+#endif /* TINKER */
     } else if (!ok_player_name(newname)) {
 #ifndef TINKER
         writelog("UNTOAD: failed, name %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#else TINKER
+#else /* TINKER */
         writelog("UNBOBBLE: failed, name %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#endif TINKER
+#endif /* TINKER */
 	notify(player, "You can't give a player that name!");
     } else {
 #ifndef TINKER
         writelog("UNTOAD: success %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#else TINKER
+#else /* TINKER */
         writelog("UNBOBBLE: success %s(%d) who '%s'\n",
 		 db[player].name, player, name);
-#endif TINKER
+#endif /* TINKER */
 
 	/* we are ok */
 	/* do it */
@@ -507,9 +510,9 @@ void do_unbobble(dbref player, const char *name, const char *newname)
 
 #ifndef TINKER
 	sprintf(buf, "You turned the toad back into %s!", db[victim].name);
-#else TINKER
+#else /* TINKER */
 	sprintf(buf, "You unbobbled %s!", db[victim].name);
-#endif TINKER
+#endif /* TINKER */
 	notify(player, buf);
 
 	sprintf(buf, "Use @newpassword to give %s a password",
@@ -518,7 +521,7 @@ void do_unbobble(dbref player, const char *name, const char *newname)
 
 #ifdef PLAYER_LIST
 	add_player(victim);
-#endif PLAYER_LIST	
+#endif /* PLAYER_LIST	 */
     }
 }
 
@@ -545,12 +548,12 @@ void do_newpassword(dbref player, const char *name, const char *password)
     } else if (God(victim) && !God(player)) {
 #ifndef TINKER
         writelog("PASSWORD: failed, wizard %s(%d) who '%s'\n",
-#else TINKER
+#else /* TINKER */
         writelog("PASSWORD: failed, tinker %s(%d) who '%s'\n",
-#endif TINKER
+#endif /* TINKER */
 		 db[player].name, player, name);
 	notify(player, "You cannot change that player's password.");
-#endif GOD_PRIV	
+#endif /* GOD_PRIV	 */
     } else {
         writelog("PASSWORD: success %s(%d) who '%s'\n",
 		 db[player].name, player, name);
@@ -574,9 +577,9 @@ void do_boot(dbref player, const char *name)
 
 #ifndef TINKER
 	notify(player, "Only a Wizard can boot another player off!");
-#else TINKER
+#else /* TINKER */
 	notify(player, "Only a Tinker can boot another player off!");
-#endif TINKER
+#endif /* TINKER */
 	return;
     }
 
@@ -590,15 +593,15 @@ void do_boot(dbref player, const char *name)
     if(God(victim)) {
 #ifndef TINKER
 	writelog ("BOOT: failed, wizard, player %s(%d), who '%s'\n",
-#else TINKER
+#else /* TINKER */
 	writelog ("BOOT: failed, tinker, player %s(%d), who '%s'\n",
-#endif TINKER
+#endif /* TINKER */
 		  db[player].name, player, name);
 
 	notify(player, "You can't boot that player!");
 	return;
     }
-#endif GOD_PRIV
+#endif /* GOD_PRIV */
 
     if(Typeof(victim) != TYPE_PLAYER) {
 	writelog ("BOOT: failed, victim, player %s(%d), who '%s'\n",

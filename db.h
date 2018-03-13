@@ -46,7 +46,7 @@ typedef int dbref;		/* offset into db */
 
 #ifdef ROBOT_MODE
 #define ROBOT		0x4000  /* Can set OUTPUTPREFIX */
-#endif ROBOT_MODE
+#endif /* ROBOT_MODE */
 
 #define UNWANTED        0x8000  /* can be chowned */
 
@@ -64,12 +64,12 @@ typedef int object_flag_type;
 #define Wizard(x) ((db[(x)].flags & WIZARD) != 0)
 #ifdef ROBOT_MODE
 #define Robot(x) ((db[(x)].flags & ROBOT) != 0)
-#endif ROBOT_MODE
+#endif /* ROBOT_MODE */
 #define Dark(x) ((db[(x)].flags & DARK) != 0)
 #ifdef GOD_PRIV
 #define GOD ((dbref)1)
 #define	God(x) ((x)==GOD)
-#endif GOD_PRIV
+#endif /* GOD_PRIV */
 
 #ifdef RECYCLE
 #define RECYCLER "Recycler"

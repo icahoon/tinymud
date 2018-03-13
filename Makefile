@@ -102,7 +102,7 @@ DISTFILES= $(CFILES) config.h db.h externs.h interface.h match.h \
 	CHANGES Makefile copyright.h
 
 OUTFILES= netmud netmud.conc concentrate dump paths sanity-check \
-	  extract decompress TAGS
+	  extract decompress TAGS conc
 
 BINDIR= /clients/Islandia/bin
 LIBDIR= /clients/Islandia/lib
@@ -118,15 +118,12 @@ TAGS: *.c *.h
 	etags *.c *.h
 
 netmud.conc: $P interface.o $(OFILES)
-	-mv -f netmud.conc netmud.conc~
 	$(CC) $(CFLAGS) -o netmud.conc interface.o $(OFILES)
 
 netmud: $P oldinterface.o $(OFILES)
-	-mv -f netmud netmud~
 	$(CC) $(CFLAGS) -o netmud oldinterface.o $(OFILES)
 
 concentrate: $P conc.c config.h
-	-mv -f concentrate concentrate~
 	$(CC) $(CFLAGS) -o concentrate conc.c
 
 dump: $P dump.o unparse.o $(DBOFILES)

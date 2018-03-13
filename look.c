@@ -2,7 +2,9 @@
 
 /* commands which look at things */
 
+#include <time.h>
 #include <sys/time.h>
+
 #include "db.h"
 #include "config.h"
 #include "interface.h"
@@ -100,7 +102,7 @@ void do_look_at(dbref player, const char *name)
 		db[thing].usecnt++;
 		db[thing].lastused = time (0);
 		/* Note: fall through into default case */
-#endif TIMESTAMPS
+#endif /* TIMESTAMPS */
 	      default:
 		look_simple(player, thing);
 		break;
@@ -302,7 +304,7 @@ void do_examine(dbref player, const char *name)
 	notify(player, buf);
     }
 
-#endif TIMESTAMPS
+#endif /* TIMESTAMPS */
 }
 
 void do_score(dbref player) 
@@ -371,9 +373,9 @@ void do_owned(dbref player, const char *sowner)
     if(!Wizard(player)) {
 #ifndef TINKER
  	notify(player,"Only a Wizard can check the ownership list. Use @find.");
-#else TINKER
+#else /* TINKER */
  	notify(player,"Only a Tinker can check the ownership list. Use @find.");
-#endif TINKER
+#endif /* TINKER */
     } else if ((owner = lookup_player(sowner)) == NOTHING) {
  	notify(player,"I couldn't find that player.");
     } else {

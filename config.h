@@ -12,9 +12,9 @@
 /* cost for various special commands */
 #ifdef TINYHELL
 # define FIND_COST 20
-#else  TINYHELL
+#else  /* TINYHELL */
 # define FIND_COST 100
-#endif TINYHELL
+#endif /* TINYHELL */
 
 #define PAGE_COST 1
 
@@ -55,9 +55,9 @@
 /* timing stuff */
 #ifdef TINYHELL
 # define DUMP_INTERVAL 21600	/* 6 hours (seconds) between dumps */
-#else  TINYHELL
+#else  /* TINYHELL */
 # define DUMP_INTERVAL 10800   /* 3 hours between dumps */
-#endif TINYHELL
+#endif /* TINYHELL */
 
 #define COMMAND_TIME_MSEC  1000	/* time slice length in milliseconds */
 #define COMMAND_BURST_SIZE   20	/* commands allowed per user in a burst */
@@ -73,7 +73,7 @@
 # define INTERNAL_PORT 6249
 # define WELCOME_MESSAGE "Welcome to TinyHELL\nTo connect to your existing character, enter \"connect name password\"\nTo create a new character, enter \"create name password\"\nUse the news command to get up-to-date news on program changes.\n\nYou can disconnect using the QUIT command, which must be capitalized as shown.\n\nUse the WHO command to find out who is currently active.\n\n"
 # define REGISTER_MESSAGE "In order to get an account, send mail to tinyhell-request@uokmax.ecn.uoknor.edu\nwith the following lines:\n\nPlayer: <playername>\nPassword: <password>\n\nYour character SHOULD be created in 72 hours.\n\n"
-#endif TINYHELL
+#endif /* TINYHELL */
 
 #ifdef ISLANDIA
 /*---------------- Islandia Welcome, Registration messages ----------------*/
@@ -81,7 +81,7 @@
 # define INTERNAL_PORT 2322
 # define WELCOME_MESSAGE "Welcome to Islandia\nTo connect to your existing character, enter \"connect name password\"\nTo create a new character, enter \"create name password\"\nUse the news command to get up-to-date news on program changes.\n\nYou can disconnect using the QUIT command, which must be capitalized as shown.\n\nUse the WHO command to find out who is currently active.\n\n"
 # define REGISTER_MESSAGE "You should not see this message\n\n"
-#endif ISLANDIA
+#endif /* ISLANDIA */
 
 #ifndef TINYPORT
 /*---------------- Generic Welcome, Registration messages ----------------*/
@@ -89,7 +89,7 @@
 # define INTERNAL_PORT 4200
 # define WELCOME_MESSAGE "Welcome to TinyMUD\nTo connect to your existing character, enter \"connect name password\"\nTo create a new character, enter \"create name password\"\nUse the news command to get up-to-date news on program changes.\n\nYou can disconnect using the QUIT command, which must be capitalized as shown.\n\nUse the WHO command to find out who is currently active.\n\n"
 # define REGISTER_MESSAGE "You must send mail to the TinyMUD system administrator to get an account.\nUnfortunately, he or she forgot to set an Email address in this part of the\n code.  Good luck!\n\n"
-#endif  TINYPORT
+#endif  /* TINYPORT */
 
 #define LEAVE_MESSAGE "\n***Disconnected***\n"
 
@@ -99,13 +99,20 @@
 #define SUFFIX_COMMAND "OUTPUTSUFFIX"
 
 #ifdef ISLANDIA
+/*
 # define HELP_FILE	"/clients/Islandia/lib/help.txt"
 # define NEWS_FILE	"/clients/Islandia/lib/news.txt"
 # define MOTD_FILE	"/clients/Islandia/lib/motd.txt"
 # define CONNECT_FILE	"/clients/Islandia/lib/connect.txt"
 # define WIZARD_FILE	"/clients/Islandia/lib/tinker.txt"
 # define LOG_FILE	"/clients/Islandia/lib/islandia.log"
-#endif ISLANDIA
+*/
+# define HELP_FILE	"help.txt"
+# define NEWS_FILE	"news.txt"
+# define MOTD_FILE	"motd.txt"
+# define WIZARD_FILE	"wizard.txt"
+# define LOG_FILE	"tinymud.log"
+#endif /* ISLANDIA */
 
 #ifdef TINYHELL
 # define HELP_FILE	"/usr/games/lib/tinyhell/help.txt"
@@ -113,7 +120,7 @@
 # define MOTD_FILE	"/usr/games/lib/tinyhell/motd.txt"
 # define WIZARD_FILE	"/usr/games/lib/tinyhell/tinker.txt"
 # define LOG_FILE	"/usr/games/lib/tinyhell/gnu.log"
-#endif TINYHELL
+#endif /* TINYHELL */
 
 #ifndef HELP_FILE
 # define HELP_FILE	"help.txt"
@@ -121,7 +128,7 @@
 # define MOTD_FILE	"motd.txt"
 # define WIZARD_FILE	"wizard.txt"
 # define LOG_FILE	"tinymud.log"
-#endif HELP_FILE
+#endif /* HELP_FILE */
 
 #ifdef LOCKOUT
 #define LOCKOUT_FILE "lockout.txt"
@@ -152,9 +159,9 @@
 # define TEMPLE_MARK	'T'  /* For Tinker */
 # define ROBOT_MARK	'C'  /* For Cybernetic */
 # define BUILDER_MARK	'B'  /* For Builder */
-#else TINKER
+#else /* TINKER */
 # define WIZARD_MARK	'T'  /* For Tinker */
 # define TEMPLE_MARK	'J'  /* For Junkpile */
 # define ROBOT_MARK	'B'  /* For Bot */
 # define BUILDER_MARK	'C'  /* For Constructor/Creator */
-#endif TINKER
+#endif /* TINKER */

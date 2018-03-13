@@ -2,6 +2,8 @@
 
 /* rob and kill */
 
+#include <stdlib.h>
+
 #include "db.h"
 #include "config.h"
 #include "interface.h"

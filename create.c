@@ -306,17 +306,17 @@ void do_pcreate (dbref player, char *newplayer, char *newpass)
     if (!God(player))
 #ifndef TINKER
         notify (player, "Only GOD can create a new player.");
-#else TINKER
+#else /* TINKER */
         notify (player, "Only the Master Tinker can create a new player.");
-#endif TINKER
-#else GOD_MODE && GOD_ONLY_PCREATE
+#endif /* TINKER */
+#else /* GOD_MODE && GOD_ONLY_PCREATE */
     if (!Wizard(player))
 #ifndef TINKER
 	notify (player, "Only a Wizard can create a new player.");
-#else TINKER
+#else /* TINKER */
 	notify (player, "Only a Tinker can create a new player.");
-#endif TINKER
-#endif GOD_MODE && GOD_ONLY_PCREATE
+#endif /* TINKER */
+#endif /* GOD_MODE && GOD_ONLY_PCREATE */
     else if (!*newplayer || !*newpass)
 	notify (player, "You must specify name and password.");
     else {
@@ -333,4 +333,4 @@ void do_pcreate (dbref player, char *newplayer, char *newpass)
 	}
     }
 }
-#endif REGISTRATION
+#endif /* REGISTRATION */

@@ -1,6 +1,9 @@
 #include "copyright.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 #include <sys/types.h>
 #include <sys/file.h>
 #include <sys/time.h>
@@ -13,8 +16,10 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <unistd.h>
 
 #include "db.h"
+#include "externs.h"
 #include "interface.h"
 #include "config.h"
 
@@ -24,7 +29,7 @@ int	shutdown_flag = 0;
 static const char *connect_fail = "Either that player does not exist, or has a different password.\n";
 #ifndef REGISTRATION
 static const char *create_fail = "Either there is already a player with that name, or that name is illegal.\n";
-#endif REGISTRATION
+#endif /* REGISTRATION */
 static const char *flushed_message = "<Output Flushed>\n";
 static const char *shutdown_message = "Going down - Bye\n";
 
@@ -90,7 +95,7 @@ int process_input(struct descriptor_data *d);
 #ifdef CONNECT_MESSAGES
 void announce_connect(dbref);
 void announce_disconnect(dbref);
-#endif CONNECT_MESSAGES
+#endif /* CONNECT_MESSAGES */
 char *time_format_1(long);
 char *time_format_2(long);
 
@@ -99,7 +104,7 @@ int bailout (int, int, struct sigcontext *);
 int sigshutdown (int, int, struct sigcontext *);
 #ifdef DETACH
 int logsynch (int, int, struct sigcontext *);
-#endif DETACH
+#endif /* DETACH */
 
 char *logfile = LOG_FILE;
 
@@ -115,7 +120,7 @@ void main(int argc, char **argv)
 {
     if (argc < 3) {
 	fprintf(stderr, "Usage: %s infile dumpfile [port [logfile]]\n", *argv);
-	exit (1);
+	exit(1);
     }
 
     if (argc > 4) logfile = argv[4];
@@ -152,7 +157,7 @@ void set_signals(void)
 
     freopen(logfile, "a", stderr);
     setbuf(stderr, NULL);
-#endif DETACH    
+#endif /* DETACH */
     
     /* we don't care about SIGPIPE, we notice it in select() and write() */
     signal (SIGPIPE, SIG_IGN);
@@ -164,16 +169,16 @@ void set_signals(void)
 #ifdef DETACH
     /* SIGUSR2 synchronizes the log file */
     signal (SIGUSR2, (void (*)) logsynch);
-#else DETACH    
+#else /* DETACH  */
     signal (SIGUSR2, (void (*)) bailout);
-#endif DETACH    
+#endif /* DETACH */
 
     /* catch these because we might as well */
     signal (SIGQUIT, (void (*)) bailout);
     signal (SIGILL, (void (*)) bailout);
     signal (SIGTRAP, (void (*)) bailout);
     signal (SIGIOT, (void (*)) bailout);
-    signal (SIGEMT, (void (*)) bailout);
+    /* signal (SIGEMT, (void (*)) bailout); */
     signal (SIGFPE, (void (*)) bailout);
     signal (SIGBUS, (void (*)) bailout);
     signal (SIGSEGV, (void (*)) bailout);
@@ -362,7 +367,7 @@ struct descriptor_data *new_connection(int sock)
 	writelog("ACCEPT from %s(%d) on descriptor %d\n",
 		 hostname,
 		 ntohs (addr.sin_port), newsock);
-#endif NOISY_LOG
+#endif /* NOISY_LOG */
 	return initializesock (newsock, &addr, hostname);
     }
 }
@@ -380,7 +385,7 @@ const char *addrout(long a)
     else return inet_ntoa(a);
 #else
     return inet_ntoa(a);
-#endif HOST_NAME
+#endif /* HOST_NAME */
 }
 
 
@@ -403,7 +408,7 @@ void shutdownsock(struct descriptor_data *d)
 		db[d->player].name, d->player, d->descriptor, d->hostname);
 #ifdef CONNECT_MESSAGES
 	announce_disconnect(d->player);
-#endif CONNECT_MESSAGES
+#endif /* CONNECT_MESSAGES */
     } else {
 	writelog("DISCONNECT descriptor %d never connected\n",
 		d->descriptor);
@@ -737,14 +742,14 @@ int do_command (struct descriptor_data *d, char *command)
 #ifndef TINKER
 	    notify(d->player,
 		   "Only robots can use OUTPUTPREFIX; contact a Wizard.");
-#else TINKER
+#else /* TINKER */
 	    notify(d->player,
 		   "Only robots can use OUTPUTPREFIX; contact a Tinker.");
-#endif TINKER
+#endif /* TINKER */
 	    return 1;
 	}
 	if (!d->connected) return 1;
-#endif ROBOT_MODE
+#endif /* ROBOT_MODE */
 	set_userstring (&d->output_prefix, command+strlen(PREFIX_COMMAND));
     } else if (d->connected &&
 	       !strncmp (command, SUFFIX_COMMAND, strlen (SUFFIX_COMMAND))) {
@@ -753,13 +758,13 @@ int do_command (struct descriptor_data *d, char *command)
 #ifndef TINKER
 	    notify(d->player,
 		   "Only robots can use OUTPUTSUFFIX; contact a Wizard.");
-#else TINKER
+#else /* TINKER */
 	    notify(d->player,
 		   "Only robots can use OUTPUTSUFFIX; contact a Tinker.");
-#endif TINKER
+#endif /* TINKER */
 	    return 1;
 	}
-#endif ROBOT_MODE
+#endif /* ROBOT_MODE */
 	set_userstring (&d->output_suffix, command+strlen(SUFFIX_COMMAND));
     } else {
 	if (d->connected) {
@@ -805,7 +810,7 @@ void check_connect (struct descriptor_data *d, const char *msg)
 	    do_look_around (player);
 #ifdef CONNECT_MESSAGES
 	    announce_connect(player);
-#endif CONNECT_MESSAGES
+#endif /* CONNECT_MESSAGES */
 	}
     } else if (!strncmp (command, "cr", 2)) {
 #ifndef REGISTRATION	
@@ -825,11 +830,11 @@ void check_connect (struct descriptor_data *d, const char *msg)
 	    do_look_around (player);
 #ifdef CONNECT_MESSAGES
 	    announce_connect(player);
-#endif CONNECT_MESSAGES
+#endif /* CONNECT_MESSAGES */
 	}
 #else
 	queue_string (d, REGISTER_MESSAGE);
-#endif REGISTRATION	
+#endif /* REGISTRATION	 */
     } else {
 	welcome_user (d);
     }
@@ -919,7 +924,7 @@ int logsynch (int sig, int code, struct sigcontext *scp)
     writelog("log file reopened\n");
     return 0;
 }
-#endif DETACH    
+#endif /* DETACH     */
 
 void dump_users(struct descriptor_data *e, char *user)
 {
@@ -942,10 +947,10 @@ void dump_users(struct descriptor_data *e, char *user)
 
 #ifdef GOD_MODE
   god = wizard = e->connected && God(e->player);
-#else  GOD_MODE
+#else  /* GOD_MODE */
   god = e->connected && God(e->player);
   wizard = e->connected && Wizard(e->player);
-#endif GOD_MODE
+#endif /* GOD_MODE */
 
     d = descriptor_list;
     
@@ -1058,7 +1063,7 @@ void announce_disconnect(dbref player)
 
     notify_except(db[loc].contents, player, buf);
 }
-#endif CONNECT_MESSAGES
+#endif /* CONNECT_MESSAGES */
 int do_connect_msg(struct descriptor_data * d, const char *filename)
 {
   FILE           *f;

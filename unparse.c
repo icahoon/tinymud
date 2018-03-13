@@ -1,5 +1,9 @@
-#include "db.h"
+#include "copyright.h"
 
+#include <stdlib.h>
+#include <string.h>
+
+#include "db.h"
 #include "externs.h"
 #include "config.h"
 #include "interface.h"
@@ -17,7 +21,7 @@ static const char *unparse_flags(dbref thing, dbref player)
 	if(db[thing].flags & WIZARD) *p++ = WIZARD_MARK;
 #ifdef ROBOT_MODE
 	if(db[thing].flags & ROBOT) *p++ = ROBOT_MARK;
-#endif ROBOT_MODE
+#endif /* ROBOT_MODE */
 	if(db[thing].flags & STICKY) *p++ = STICKY_MARK;
 	if(db[thing].flags & DARK) *p++ = DARK_MARK;
 	if(db[thing].flags & LINK_OK) *p++ = LINK_MARK;

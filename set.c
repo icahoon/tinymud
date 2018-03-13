@@ -2,6 +2,7 @@
 
 /* commands which set parameters */
 #include <stdio.h>
+#include <string.h>
 #include <ctype.h>
 
 #include "db.h"
@@ -89,7 +90,7 @@ void do_name(dbref player, const char *name, char *newname)
 	    add_player(thing);
 	    notify(player, "Name set.");
 	    return;
-#endif PLAYER_LIST	    
+#endif /* PLAYER_LIST	     */
 	} else {
 	    if(!ok_name(newname)) {
 		notify(player, "That is not a reasonable name.");
@@ -335,14 +336,14 @@ void do_set(dbref player, const char *name, const char *flag)
 		notify(player,
 #ifndef TINKER
 		       "Only a Wizard can designate a player robotic.");
-#else TINKER
+#else /* TINKER */
 		       "Only a Tinker can designate a player robotic.");
-#endif TINKER
+#endif /* TINKER */
 		return;
 	    }
 	}
 	f = ROBOT;
-#endif ROBOT_MODE
+#endif /* ROBOT_MODE */
     } else if(string_prefix("TABULAR_WHO", p)) {
 	f = TABULAR_WHO;
     } else if(string_prefix("REVERSED_WHO", p)) {
@@ -401,7 +402,7 @@ void do_set(dbref player, const char *name, const char *flag)
 	notify(player, "Permission denied.");
 	return;
     }
-#endif GOD_PRIV
+#endif /* GOD_PRIV */
 
     if (!Wizard(player) && f == DARK && Typeof(thing) == TYPE_THING &&
     	db[thing].location != player) {
@@ -413,7 +414,7 @@ void do_set(dbref player, const char *name, const char *flag)
     if(!God(player) && (f == WIZARD)) {
 #else
     if (!Wizard(player) && (f == WIZARD)) {
-#endif GOD_PRIV
+#endif /* GOD_PRIV */
 	writelog ("WIZARD: failed %s(%d) %s %s(%d)\n",
 		  db[player].name, player,
 		  *flag == NOT_TOKEN ? "reset" : "set",
@@ -441,7 +442,7 @@ void do_set(dbref player, const char *name, const char *flag)
 	notify(player, "You cannot make yourself mortal!");
 	return;
     }
-#endif GOD_PRIV
+#endif /* GOD_PRIV */
 
     if ( f==HAVEN && !(Typeof(thing) == TYPE_ROOM ||
 		       Typeof(thing) == TYPE_PLAYER)) {
@@ -633,5 +634,5 @@ void do_count(dbref player, const char *name)
     }
 
 }
-#endif RECYCLE
+#endif /* RECYCLE */
 

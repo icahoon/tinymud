@@ -2,6 +2,8 @@
 
 /* Commands which involve speaking */
 
+#include <string.h>
+
 #include "db.h"
 #include "interface.h"
 #include "match.h"
@@ -44,7 +46,7 @@ void do_whisper(dbref player, const char *arg1, const char *arg2)
 {
 #ifndef QUIET_WHISPER
     dbref loc;
-#endif QUIET_WHISPER
+#endif /* QUIET_WHISPER */
     dbref who;
     char buf[BUFFER_LEN];
     char *det;
@@ -156,7 +158,7 @@ void do_gripe(dbref player, const char *arg1, const char *arg2)
 		unparse_object(GOD, player), message);
 	notify(GOD, buf);
     }
-#endif GOD_PRIV    
+#endif /* GOD_PRIV */
 
     notify(player, "Your complaint has been duly noted.");
 }

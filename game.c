@@ -1,11 +1,14 @@
 #include "copyright.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <ctype.h>
 #include <signal.h>
 #include <sys/wait.h>
 #include <time.h>
 #include <stdarg.h>
+#include <unistd.h>
+#include <string.h>
     
 #include "db.h"
 #include "config.h"
@@ -97,7 +100,7 @@ void panic(const char *message)
 #ifndef NODUMPCORE
 	signal(SIGILL, SIG_DFL);
 	abort();
-#endif NODUMPCORE
+#endif /* NODUMPCORE */
 	_exit(135);
     } else {
 	writelog("DUMPING: %s\n", panicfile);
@@ -107,7 +110,7 @@ void panic(const char *message)
 #ifndef NODUMPCORE
 	signal(SIGILL, SIG_DFL);
 	abort();
-#endif NODUMPCORE
+#endif /* NODUMPCORE */
 	_exit(136);
     }
 }
@@ -168,7 +171,8 @@ static void fork_and_dump(void)
 
 static int reaper(void)
 {
-    union wait stat;
+    /* union wait stat; */
+    int stat;
 
     while(wait3(&stat, WNOHANG, 0) > 0);
     return 0;
@@ -213,7 +217,7 @@ void process_command(dbref player, char *command)
     char *q;			/* utility */
     char *p;			/* utility */
 
-    char *index(char *, char);
+    /* char *index(char *, char); */
 
     if(command == 0) abort();
 
@@ -233,7 +237,7 @@ void process_command(dbref player, char *command)
 #ifdef TIMESTAMPS
     db[player].usecnt++;
     db[player].lastused = time (0);
-#endif TIMESTAMPS
+#endif /* TIMESTAMPS */
 
     /* eat leading whitespace */
     while(*command && isspace(*command)) command++;
@@ -321,7 +325,7 @@ void process_command(dbref player, char *command)
 		    Matched("@count");
 		    do_count(player, arg1);
 		    break;
-#endif RECYCLE
+#endif /* RECYCLE */
 		  case 'r':
 		  case 'R':
 		    Matched("@create");
@@ -462,7 +466,7 @@ void process_command(dbref player, char *command)
  		    Matched("@pcreate");
  		    do_pcreate(player, arg1, arg2);
  		    break;
-#endif REGISTRATION
+#endif /* REGISTRATION */
 	          default: goto bad;
  		}
 		break;
@@ -473,7 +477,7 @@ void process_command(dbref player, char *command)
 		Matched("@recycle");
 		do_recycle(player, arg1);
 		break;
-#endif RECYCLE
+#endif /* RECYCLE */
 	      case 's':
 	      case 'S':
 		/* set, shutdown, success */

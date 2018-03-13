@@ -1,10 +1,14 @@
 #include "copyright.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
 #include <ctype.h>
 
 #include "db.h"
 #include "config.h"
+#include "externs.h"
 
 struct object *db = 0;
 dbref db_top = 0;
@@ -123,7 +127,7 @@ dbref new_object(void)
     o->created = time (0);
     o->lastused = 0;
     o->usecnt = 0;
-#endif TIMESTAMPS
+#endif /* TIMESTAMPS */
 
     return newobj;
 }
@@ -206,7 +210,7 @@ int db_write_object(FILE *f, dbref i)
     putref(f, o->created);
     putref(f, o->lastused);
     putref(f, o->usecnt);
-#endif TIMESTAMPS
+#endif /* TIMESTAMPS */
 
     return 0;
 }
@@ -471,7 +475,7 @@ dbref db_read(FILE *f)
 	    o->created = getref (f);
 	    o->lastused = getref (f);
 	    o->usecnt = getref (f);
-#endif TIMESTAMPS
+#endif /* TIMESTAMPS */
 
 	    /* Ignore extra input to next '#' or '*' */
 	    while ((peekch = do_peek (f)) != EOF &&
@@ -489,7 +493,7 @@ dbref db_read(FILE *f)
 	    if(Typeof(i) == TYPE_PLAYER) {
 		add_player(i);
 	    }
-#endif PLAYER_LIST	    
+#endif /* PLAYER_LIST */
 	    break;
 	  case '*':
 	    end = getstring(f);
