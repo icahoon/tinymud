@@ -7,7 +7,7 @@
 #include "interface.h"
 #include "externs.h"
 
-#ifndef PLAYER_LIST    
+#ifndef PLAYER_LIST
 /* don't use this, it's expensive */
 /* maybe soon we'll put in a hash table */
 dbref lookup_player(const char *name)
@@ -15,8 +15,8 @@ dbref lookup_player(const char *name)
     dbref i;
 
     for(i = 0; i < db_top; i++) {
-	if(Typeof(i) == TYPE_PLAYER
-	   && db[i].name && !string_compare(db[i].name, name)) return i;
+        if(Typeof(i) == TYPE_PLAYER
+           && db[i].name && !string_compare(db[i].name, name)) return i;
     }
     return NOTHING;
 }
@@ -46,11 +46,11 @@ dbref create_player(const char *name, const char *password)
     /* initialize everything */
     db[player].name = alloc_string(name);
     db[player].location = PLAYER_START;
-    db[player].exits = PLAYER_START;	/* home */
+    db[player].exits = PLAYER_START;        /* home */
     db[player].owner = player;
     db[player].flags = TYPE_PLAYER;
     db[player].password = alloc_string(password);
-    
+
     /* link him to PLAYER_START */
     PUSH(player, db[PLAYER_START].contents);
 
@@ -64,12 +64,12 @@ dbref create_player(const char *name, const char *password)
 void do_password(dbref player, const char *old, const char *newobj)
 {
     if(!db[player].password || strcmp(old, db[player].password)) {
-	notify(player, "Sorry");
+        notify(player, "Sorry");
     } else if(!ok_password(newobj)) {
-	notify(player, "Bad new password.");
+        notify(player, "Bad new password.");
     } else {
-	free((void *) db[player].password);
-	db[player].password = alloc_string(newobj);
-	notify(player, "Password changed.");
+        free((void *) db[player].password);
+        db[player].password = alloc_string(newobj);
+        notify(player, "Password changed.");
     }
 }

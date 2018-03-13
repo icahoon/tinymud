@@ -1,7 +1,7 @@
 /* -*-C-*-
 
 Copyright (c) 1989, 1990 by David Applegate, James Aspnes, Timothy Freeman,
-		        and Bennet Yee.
+                        and Bennet Yee.
 
 This material was developed by the above-mentioned authors.
 Permission to copy this software, to redistribute it, and to use it

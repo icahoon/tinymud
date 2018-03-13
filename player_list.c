@@ -22,7 +22,7 @@ static void init_hft(void)
     int i;
 
     for(i = 0; i < 256; i++) {
-	hash_function_table[i] = random() & (PLAYER_LIST_SIZE - 1);
+        hash_function_table[i] = random() & (PLAYER_LIST_SIZE - 1);
     }
     hft_initialized = 1;
 }
@@ -34,14 +34,14 @@ static dbref hash_function(const char *string)
     if(!hft_initialized) init_hft();
     hash = 0;
     for(; *string; string++) {
-	hash ^= ((hash >> 1) ^ hash_function_table[DOWNCASE(*string)]);
+        hash ^= ((hash >> 1) ^ hash_function_table[DOWNCASE(*string)]);
     }
     return(hash);
 }
 
 struct pl_elt {
-    dbref player;		/* pointer to player */
-				/* key is db[player].name */
+    dbref player;                /* pointer to player */
+                                /* key is db[player].name */
     struct pl_elt *next;
 };
 
@@ -55,13 +55,13 @@ void clear_players(void)
     struct pl_elt *next;
 
     for(i = 0; i < PLAYER_LIST_SIZE; i++) {
-	if(pl_used) {
-	    for(e = player_list[i]; e; e = next) {
-		next = e->next;
-		free((void *) e);
-	    }
-	}
-	player_list[i] = 0;
+        if(pl_used) {
+            for(e = player_list[i]; e; e = next) {
+                next = e->next;
+                free((void *) e);
+            }
+        }
+        player_list[i] = 0;
     }
     pl_used = 1;
 }
@@ -84,7 +84,7 @@ dbref lookup_player(const char *name)
     struct pl_elt *e;
 
     for(e = player_list[hash_function(name)]; e; e = e->next) {
-	if(!string_compare(db[e->player].name, name)) return e->player;
+        if(!string_compare(db[e->player].name, name)) return e->player;
     }
     return NOTHING;
 }
@@ -97,20 +97,20 @@ void delete_player(dbref player)
 
     hash = hash_function(db[player].name);
     if((e = player_list[hash]) == 0) {
-	return;
+        return;
     } else if(e->player == player) {
-	/* it's the first one */
-	player_list[hash] = e->next;
-	free((void *) e);
+        /* it's the first one */
+        player_list[hash] = e->next;
+        free((void *) e);
     } else {
-	for(prev = e, e = e->next; e; prev = e, e = e->next) {
-	    if(e->player == player) {
-		/* got it */
-		prev->next = e->next;
-		free((void *) e);
-		break;
-	    }
-	}
+        for(prev = e, e = e->next; e; prev = e, e = e->next) {
+            if(e->player == player) {
+                /* got it */
+                prev->next = e->next;
+                free((void *) e);
+                break;
+            }
+        }
     }
 }
 

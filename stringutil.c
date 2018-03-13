@@ -16,7 +16,7 @@ int string_compare(const char *s1, const char *s2)
 int string_prefix(const char *string, const char *prefix)
 {
     while(*string && *prefix && DOWNCASE(*string) == DOWNCASE(*prefix))
-	string++, prefix++;
+        string++, prefix++;
     return *prefix == '\0';
 }
 
@@ -24,12 +24,12 @@ int string_prefix(const char *string, const char *prefix)
 const char *string_match(const char *src, const char *sub)
 {
     if(*sub != '\0') {
-	while(*src) {
-	    if(string_prefix(src, sub)) return src;
-	    /* else scan to beginning of next word */
-	    while(*src && isalnum(*src)) src++;
-	    while(*src && !isalnum(*src)) src++;
-	}
+        while(*src) {
+            if(string_prefix(src, sub)) return src;
+            /* else scan to beginning of next word */
+            while(*src && isalnum(*src)) src++;
+            while(*src && !isalnum(*src)) src++;
+        }
     }
 
     return 0;

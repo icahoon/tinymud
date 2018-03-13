@@ -42,26 +42,26 @@
 #define MAX_PENNIES 10000
 
 /* penny generation parameters */
-#define PENNY_RATE 10		/* 1/chance of getting a penny per room */
+#define PENNY_RATE 10                /* 1/chance of getting a penny per room */
 
 /* costs of kill command */
-#define KILL_BASE_COST 100	/* prob = expenditure/KILL_BASE_COST */
+#define KILL_BASE_COST 100        /* prob = expenditure/KILL_BASE_COST */
 #define KILL_MIN_COST 10
-#define KILL_BONUS 50		/* paid to victim */
+#define KILL_BONUS 50                /* paid to victim */
 
 /* delimiter for lists of exit aliases */
 #define EXIT_DELIMITER ';'
 
 /* timing stuff */
 #ifdef TINYHELL
-# define DUMP_INTERVAL 21600	/* 6 hours (seconds) between dumps */
+# define DUMP_INTERVAL 21600        /* 6 hours (seconds) between dumps */
 #else  /* TINYHELL */
 # define DUMP_INTERVAL 10800   /* 3 hours between dumps */
 #endif /* TINYHELL */
 
-#define COMMAND_TIME_MSEC  1000	/* time slice length in milliseconds */
-#define COMMAND_BURST_SIZE   20	/* commands allowed per user in a burst */
-#define COMMANDS_PER_TIME     1	/* commands per time slice after burst */
+#define COMMAND_TIME_MSEC  1000        /* time slice length in milliseconds */
+#define COMMAND_BURST_SIZE   20        /* commands allowed per user in a burst */
+#define COMMANDS_PER_TIME     1        /* commands per time slice after burst */
 #define COMMAND_ALLOW_EXTRA   1 /* Allow commands over quota if not busy */
 
 /* maximum amount of queued output */
@@ -100,34 +100,34 @@
 
 #ifdef ISLANDIA
 /*
-# define HELP_FILE	"/clients/Islandia/lib/help.txt"
-# define NEWS_FILE	"/clients/Islandia/lib/news.txt"
-# define MOTD_FILE	"/clients/Islandia/lib/motd.txt"
-# define CONNECT_FILE	"/clients/Islandia/lib/connect.txt"
-# define WIZARD_FILE	"/clients/Islandia/lib/tinker.txt"
-# define LOG_FILE	"/clients/Islandia/lib/islandia.log"
+# define HELP_FILE        "/clients/Islandia/lib/help.txt"
+# define NEWS_FILE        "/clients/Islandia/lib/news.txt"
+# define MOTD_FILE        "/clients/Islandia/lib/motd.txt"
+# define CONNECT_FILE        "/clients/Islandia/lib/connect.txt"
+# define WIZARD_FILE        "/clients/Islandia/lib/tinker.txt"
+# define LOG_FILE        "/clients/Islandia/lib/islandia.log"
 */
-# define HELP_FILE	"help.txt"
-# define NEWS_FILE	"news.txt"
-# define MOTD_FILE	"motd.txt"
-# define WIZARD_FILE	"wizard.txt"
-# define LOG_FILE	"tinymud.log"
+# define HELP_FILE        "help.txt"
+# define NEWS_FILE        "news.txt"
+# define MOTD_FILE        "motd.txt"
+# define WIZARD_FILE        "wizard.txt"
+# define LOG_FILE        "tinymud.log"
 #endif /* ISLANDIA */
 
 #ifdef TINYHELL
-# define HELP_FILE	"/usr/games/lib/tinyhell/help.txt"
-# define NEWS_FILE	"/usr/games/lib/tinyhell/news.txt"
-# define MOTD_FILE	"/usr/games/lib/tinyhell/motd.txt"
-# define WIZARD_FILE	"/usr/games/lib/tinyhell/tinker.txt"
-# define LOG_FILE	"/usr/games/lib/tinyhell/gnu.log"
+# define HELP_FILE        "/usr/games/lib/tinyhell/help.txt"
+# define NEWS_FILE        "/usr/games/lib/tinyhell/news.txt"
+# define MOTD_FILE        "/usr/games/lib/tinyhell/motd.txt"
+# define WIZARD_FILE        "/usr/games/lib/tinyhell/tinker.txt"
+# define LOG_FILE        "/usr/games/lib/tinyhell/gnu.log"
 #endif /* TINYHELL */
 
 #ifndef HELP_FILE
-# define HELP_FILE	"help.txt"
-# define NEWS_FILE	"news.txt"
-# define MOTD_FILE	"motd.txt"
-# define WIZARD_FILE	"wizard.txt"
-# define LOG_FILE	"tinymud.log"
+# define HELP_FILE        "help.txt"
+# define NEWS_FILE        "news.txt"
+# define MOTD_FILE        "motd.txt"
+# define WIZARD_FILE        "wizard.txt"
+# define LOG_FILE        "tinymud.log"
 #endif /* HELP_FILE */
 
 #ifdef LOCKOUT
@@ -140,28 +140,28 @@
  * the TINKER flag, and the Islandia settings with the
  * TINKER flag...of course, you can define them any way you
  * want, but then you may have to change other messages to
- * make the letters match their flag types.	--Fuzzy 5/31/90
+ * make the letters match their flag types.        --Fuzzy 5/31/90
  */
 
-# define TYPE_CODES	"R-EP" /* Room, thing, exit, player */
-# define STICKY_MARK	'S'
-# define DARK_MARK	'D'
-# define LINK_MARK	'L'
-# define ABODE_MARK	'A'
-# define HAVEN_MARK	'H'
-# define UNWANTED_MARK	'U'
-# define MALE_MARK	'M'
-# define FEMALE_MARK	'F'
-# define NEUTER_MARK	'N'
+# define TYPE_CODES        "R-EP" /* Room, thing, exit, player */
+# define STICKY_MARK        'S'
+# define DARK_MARK        'D'
+# define LINK_MARK        'L'
+# define ABODE_MARK        'A'
+# define HAVEN_MARK        'H'
+# define UNWANTED_MARK        'U'
+# define MALE_MARK        'M'
+# define FEMALE_MARK        'F'
+# define NEUTER_MARK        'N'
 
 #ifndef TINKER
-# define WIZARD_MARK	'W'  /* For Wizard */
-# define TEMPLE_MARK	'T'  /* For Tinker */
-# define ROBOT_MARK	'C'  /* For Cybernetic */
-# define BUILDER_MARK	'B'  /* For Builder */
+# define WIZARD_MARK        'W'  /* For Wizard */
+# define TEMPLE_MARK        'T'  /* For Tinker */
+# define ROBOT_MARK        'C'  /* For Cybernetic */
+# define BUILDER_MARK        'B'  /* For Builder */
 #else /* TINKER */
-# define WIZARD_MARK	'T'  /* For Tinker */
-# define TEMPLE_MARK	'J'  /* For Junkpile */
-# define ROBOT_MARK	'B'  /* For Bot */
-# define BUILDER_MARK	'C'  /* For Constructor/Creator */
+# define WIZARD_MARK        'T'  /* For Tinker */
+# define TEMPLE_MARK        'J'  /* For Junkpile */
+# define ROBOT_MARK        'B'  /* For Bot */
+# define BUILDER_MARK        'C'  /* For Constructor/Creator */
 #endif /* TINKER */

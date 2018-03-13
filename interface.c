@@ -5,7 +5,7 @@
 /* modified interface.c to support LOTS of people, using a concentrator */
 /* May 1990, Robert Hood */
 
-/* #define CHECKC */	/* consistency checking */
+/* #define CHECKC */        /* consistency checking */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -63,15 +63,15 @@ struct descriptor_data
   long            connected_at;
   long            last_time;
   int             quota;
-  struct sockaddr_in address;	       /* added 3/6/90 SCG */
-  char           *hostname;	       /* 5/18/90 - Fuzzy */
+  struct sockaddr_in address;               /* added 3/6/90 SCG */
+  char           *hostname;               /* 5/18/90 - Fuzzy */
   struct descriptor_data *next;
 };
 
-#define MALLOC(result, type, number) do {			\
-	if (!((result) = (type *) malloc ((number) * sizeof (type))))	\
-		panic("Out of memory");				\
-	} while (0)
+#define MALLOC(result, type, number) do {                        \
+        if (!((result) = (type *) malloc ((number) * sizeof (type))))        \
+                panic("Out of memory");                                \
+        } while (0)
 
 #define FREE(x) (free((void *) x))
 
@@ -134,7 +134,7 @@ char           *time_format_2(long dt);
 #ifdef CONNECT_MESSAGES
 void            announce_connect(dbref);
 void            announce_disconnect(dbref);
-#endif				       /* CONNECT_MESSAGES */
+#endif                                       /* CONNECT_MESSAGES */
 int             sigshutdown(int, int, struct sigcontext *);
 
 int             logsynch();
@@ -147,7 +147,7 @@ void            file_date(struct descriptor_data * d, const char *file);
 static const char *connect_fail = "Either that player does not exist, or has a different password.\n";
 #ifndef REGISTRATION
 static const char *create_fail = "Either there is already a player with that name, or that name is illegal.\n";
-#endif				       /* REGISTRATION */
+#endif                                       /* REGISTRATION */
 static const char *flushed_message = "<Output Flushed>\n";
 static const char *shutdown_message = "Going down - Bye\n";
 
@@ -158,14 +158,14 @@ int             port = TINYPORT;
 int             intport = INTERNAL_PORT;
 
 /* Tunable Timing Parameters for process_commands() and I/O */
-long		slice_msecs = COMMAND_TIME_MSEC;
-long		burst_quota = COMMAND_BURST_SIZE;
-long		timeout_msecs = 100;
-long		poll_msecs = 10;
-long		allow_extra = COMMAND_ALLOW_EXTRA;
+long                slice_msecs = COMMAND_TIME_MSEC;
+long                burst_quota = COMMAND_BURST_SIZE;
+long                timeout_msecs = 100;
+long                poll_msecs = 10;
+long                allow_extra = COMMAND_ALLOW_EXTRA;
 
 /* Number of players with commands waiting */
-static int	waiting_cmds = 0;
+static int        waiting_cmds = 0;
 
 void start_port()
 {
@@ -235,9 +235,9 @@ struct timeval update_quotas(struct timeval last, struct timeval current)
     for (c = firstc; c; c = c->next)
       for (d = c->firstd; d; d = d->next)
       {
-	d->quota += COMMANDS_PER_TIME * nslices;
-	if (d->quota > burst_quota)
-	  d->quota = burst_quota;
+        d->quota += COMMANDS_PER_TIME * nslices;
+        if (d->quota > burst_quota)
+          d->quota = burst_quota;
       }
   }
   return msec_add(last, nslices * slice_msecs);
@@ -253,14 +253,14 @@ int notify(dbref player2, const char *msg)
   extern const char *uncompress(const char *);
 
   msg = uncompress(msg);
-#endif				       /* COMPRESS */
+#endif                                       /* COMPRESS */
   for (c = firstc; c; c = c->next)
     for (d = c->firstd; d; d = d->next)
     {
       if (d->connected && d->player == player2)
       {
-	queue_string_nl(d, msg);
-	retval++;
+        queue_string_nl(d, msg);
+        retval++;
       }
     }
   return (retval);
@@ -287,7 +287,7 @@ int process_input(d, buf, got)
     {
       *p = '\0';
       if (p > d->raw_input)
-	save_command(d, d->raw_input);
+        save_command(d, d->raw_input);
       p = d->raw_input;
     } else
     if (p < pend && isascii(*q) && isprint(*q))
@@ -320,7 +320,7 @@ void process_commands()
   { for (c = firstc, allow_over=1; c && allow_over; c = c->next)
     { for (d = c->firstd; d; d = d->next)
       { if (d->quota > 0 && d->input.head ||
-	    d->output.head)
+            d->output.head)
         { allow_over = 0; break; }
       }
     }
@@ -328,7 +328,7 @@ void process_commands()
 
   /* Process commands while there are people under quota or time left */
   do
-  { underquota = overquota = 0;		/* Initialize counts */
+  { underquota = overquota = 0;                /* Initialize counts */
 
     for (c = firstc; c; c = c->next)
     { dlast = 0;
@@ -336,38 +336,38 @@ void process_commands()
       for (d = c->firstd; d; d = dnext)
       { dnext = d->next;
         if (t = d->input.head)
-	{ if (d->quota > 0 || allow_over)
-	  { if (d->quota > 0 && --d->quota > 0) underquota++;
-  
-	    if (!do_command(d, t->start))	/* 0 => QUIT */
-	    { header[0] = 0;
-	      header[1] = 2;
-	      header[2] = d->num;
-	      queue_message(c, header, 3);
-  
-	      if (dlast)	dlast->next = dnext;
-	      else		c->firstd = dnext;
-	      shutdownsock(d);
-	      FREE(d);
-	      break;
-	    }
-	    else
-	    { d->input.head = t->nxt;
-	      if (!d->input.head)
-		d->input.tail = &d->input.head;
-	      free_text_block(t);
-  	    }
-	  }
-	  else /* At least one player has a command in the queue over quota */
-	  { overquota++; }
+        { if (d->quota > 0 || allow_over)
+          { if (d->quota > 0 && --d->quota > 0) underquota++;
+
+            if (!do_command(d, t->start))        /* 0 => QUIT */
+            { header[0] = 0;
+              header[1] = 2;
+              header[2] = d->num;
+              queue_message(c, header, 3);
+
+              if (dlast)        dlast->next = dnext;
+              else                c->firstd = dnext;
+              shutdownsock(d);
+              FREE(d);
+              break;
+            }
+            else
+            { d->input.head = t->nxt;
+              if (!d->input.head)
+                d->input.tail = &d->input.head;
+              free_text_block(t);
+              }
+          }
+          else /* At least one player has a command in the queue over quota */
+          { overquota++; }
         }
-  
-	dlast = d;
+
+        dlast = d;
       }
     }
 
   } while (underquota > 0);
-  
+
   waiting_cmds = underquota + overquota;
 }
 
@@ -381,10 +381,10 @@ void dump_users(struct descriptor_data * e, char *user)
   struct conc_list *c;
   long            now;
   int             counter = 0;
-  static int	  maxcounter = 0;
+  static int          maxcounter = 0;
   int             wizard, god, reversed, tabular;
   char            buf[1024], flagbuf[16];
-  static long	  lastcounted = 0;
+  static long          lastcounted = 0;
 
 
 # ifdef DO_WHOCHECK
@@ -403,7 +403,7 @@ void dump_users(struct descriptor_data * e, char *user)
   time(&now);
 
   queue_string(e, tabular ? "Player Name          On For Idle\n" :
-	       "Current Players:\n");
+               "Current Players:\n");
 #ifdef GOD_MODE
   god = wizard = e->connected && God(e->player);
 #else  /* GOD_MODE */
@@ -420,32 +420,32 @@ void dump_users(struct descriptor_data * e, char *user)
     {
       dcount = 0;
       for (d = rwclist[cloop]->firstd; d; d = d->next)
-	rwdlist[dcount++] = d;
+        rwdlist[dcount++] = d;
       for (dloop = dcount - 1; dloop >= 0; --dloop)
       {
-	d = rwdlist[dloop];
-	if (d->connected &&
-	    ++counter && /* Count everyone connected */
-	    (!user || string_prefix(db[d->player].name, user)))
-	{
-	  if (tabular)
-	  {
-	    sprintf(buf, "%-16s %10s %4s",
-		    db[d->player].name,
-		    time_format_1(now - d->connected_at),
-		    time_format_2(now - d->last_time));
+        d = rwdlist[dloop];
+        if (d->connected &&
+            ++counter && /* Count everyone connected */
+            (!user || string_prefix(db[d->player].name, user)))
+        {
+          if (tabular)
+          {
+            sprintf(buf, "%-16s %10s %4s",
+                    db[d->player].name,
+                    time_format_1(now - d->connected_at),
+                    time_format_2(now - d->last_time));
 
-	    if (wizard)
-	      sprintf(buf, "%s  %s", buf, d->hostname);
-	  } else
-	  {
-	    sprintf(buf, "%s idle %d seconds",
-		    db[d->player].name, now - d->last_time);
-	    if (wizard)
-	      sprintf(buf, "%s from host %s", buf, d->hostname);
-	  }
-	  queue_string_nl(e, buf);
-	}
+            if (wizard)
+              sprintf(buf, "%s  %s", buf, d->hostname);
+          } else
+          {
+            sprintf(buf, "%s idle %d seconds",
+                    db[d->player].name, now - d->last_time);
+            if (wizard)
+              sprintf(buf, "%s from host %s", buf, d->hostname);
+          }
+          queue_string_nl(e, buf);
+        }
       }
     }
   } else
@@ -454,59 +454,59 @@ void dump_users(struct descriptor_data * e, char *user)
     {
       for (d = c->firstd; d; d = d->next)
       {
-	if (d->connected &&
-	    ++counter && /* Count everyone connected */
-	    (!user || string_prefix(db[d->player].name, user)))
-	{
-	  if (god)
-	  {
+        if (d->connected &&
+            ++counter && /* Count everyone connected */
+            (!user || string_prefix(db[d->player].name, user)))
+        {
+          if (god)
+          {
 #ifdef ROBOT_MODE
-	    sprintf (flagbuf, "%c%c%c  ",
-		     Flag(d->player, WIZARD) ? WIZARD_MARK : ' ',
-		     Flag(d->player, ROBOT)  ? ROBOT_MARK  : ' ',
-		     Flag(d->player, DARK)   ? DARK_MARK   : ' ');
+            sprintf (flagbuf, "%c%c%c  ",
+                     Flag(d->player, WIZARD) ? WIZARD_MARK : ' ',
+                     Flag(d->player, ROBOT)  ? ROBOT_MARK  : ' ',
+                     Flag(d->player, DARK)   ? DARK_MARK   : ' ');
 #else
-	    sprintf (flagbuf, "%c%c  ",
-		     Flag(d->player, WIZARD) ? WIZARD_MARK : ' ',
-		     Flag(d->player, DARK)   ? DARK_MARK   : ' ');
+            sprintf (flagbuf, "%c%c  ",
+                     Flag(d->player, WIZARD) ? WIZARD_MARK : ' ',
+                     Flag(d->player, DARK)   ? DARK_MARK   : ' ');
 #endif
-	  }
-	  else
-	  { sprintf (flagbuf, ""); }
+          }
+          else
+          { sprintf (flagbuf, ""); }
 
-	  if (tabular)
-	  {
-	    sprintf(buf, "%-16s %10s %4s",
-		    db[d->player].name,
-		    time_format_1(now - d->connected_at),
-		    time_format_2(now - d->last_time));
+          if (tabular)
+          {
+            sprintf(buf, "%-16s %10s %4s",
+                    db[d->player].name,
+                    time_format_1(now - d->connected_at),
+                    time_format_2(now - d->last_time));
 
-	    if (wizard)
-	      sprintf(buf, "%s  %s%s", buf, flagbuf, d->hostname);
-	  } else
-	  {
-	    sprintf(buf, "%s idle %d seconds",
-		    db[d->player].name, now - d->last_time);
-	    if (wizard)
-	      sprintf(buf, "%s %sfrom host %s", buf, flagbuf, d->hostname);
-	  }
-	  queue_string_nl(e, buf);
-	}
+            if (wizard)
+              sprintf(buf, "%s  %s%s", buf, flagbuf, d->hostname);
+          } else
+          {
+            sprintf(buf, "%s idle %d seconds",
+                    db[d->player].name, now - d->last_time);
+            if (wizard)
+              sprintf(buf, "%s %sfrom host %s", buf, flagbuf, d->hostname);
+          }
+          queue_string_nl(e, buf);
+        }
       }
     }
   }
-  
+
   if (counter > maxcounter)
   { maxcounter = counter;
     if (counter >= 60 ||
-    	(time (0) - lastcounted) > 3600)
+            (time (0) - lastcounted) > 3600)
     { writelog ("%d users logged in\n", counter);
       lastcounted = time (0);
     }
   }
-  
+
   sprintf(buf, "%d user%s connected\n", counter,
-	  counter == 1 ? " is" : "s are");
+          counter == 1 ? " is" : "s are");
   queue_string(e, buf);
 }
 
@@ -516,7 +516,6 @@ void free_text_block(struct text_block * t)
   FREE((char *)t);
 }
 
-#ifndef BOOLEXP_DEBUGGING
 void main(int argc, char **argv)
 {
   int             pid;
@@ -565,8 +564,6 @@ void main(int argc, char **argv)
   exit(0);
 }
 
-#endif
-
 void start_log()
 {
 #ifdef DETACH
@@ -586,7 +583,7 @@ void start_log()
   }
   freopen(logfile, "a", stderr);
   setbuf(stderr, NULL);
-#endif				       /* DETACH */
+#endif                                       /* DETACH */
 }
 
 void set_signals(void)
@@ -599,9 +596,9 @@ void set_signals(void)
 
 #ifdef DETACH
   signal(SIGUSR2, (void *)logsynch);
-#else				       /* DETACH */
+#else                                       /* DETACH */
   signal(SIGUSR2, (void *)bailout);
-#endif				       /* DETACH */
+#endif                                       /* DETACH */
 
   if (debug)
     return;
@@ -626,7 +623,7 @@ void set_signals(void)
 int msec_diff(struct timeval now, struct timeval then)
 {
                   return ((now.tv_sec - then.tv_sec) * 1000
-		       +               (now.tv_usec - then.tv_usec) / 1000);
+                       +               (now.tv_usec - then.tv_usec) / 1000);
 }
 
 void clearstrings(struct descriptor_data * d)
@@ -648,15 +645,15 @@ void shutdownsock(struct descriptor_data * d)
   if              (d->connected)
   {
                     writelog("DISCONNECT descriptor %d,%d player %s(%d) %s\n",
-			     d->descriptor, d->num,
-			     db[d->player].name, d->player, d->hostname);
+                             d->descriptor, d->num,
+                             db[d->player].name, d->player, d->hostname);
 #ifdef CONNECT_MESSAGES
     announce_disconnect(d->player);
-#endif				       /* CONNECT_MESSAGES */
+#endif                                       /* CONNECT_MESSAGES */
   } else
   {
     writelog("DISCONNECT descriptor %d,%d %s never connected\n",
-	     d->descriptor, d->num, d->hostname);
+             d->descriptor, d->num, d->hostname);
   }
   clearstrings(d);
   freeqs(d);
@@ -679,9 +676,9 @@ struct descriptor_data * initializesock(struct sockaddr_in * a)
   d->raw_input_at = 0;
   d->quota = burst_quota;
   d->last_time = 0;
-  d->address = *a;		       /* This will be the address of the
-				        * concentrator */
-  d->hostname = "";		       /* This will be set during connect */
+  d->address = *a;                       /* This will be the address of the
+                                        * concentrator */
+  d->hostname = "";                       /* This will be set during connect */
 
   welcome_user(d);
   return d;
@@ -757,7 +754,7 @@ int queue_string_nl(struct descriptor_data * d, const char *str)
 { char buf[MAX_OUTPUT], *t;
   const char *s;
   int len = 0, retval;
-  
+
   for (s=str, t=buf; *s && ++len < MAX_OUTPUT; ) *t++ = *s++;
   if (++len < MAX_OUTPUT)
   { *t++ = '\n';
@@ -767,7 +764,7 @@ int queue_string_nl(struct descriptor_data * d, const char *str)
   { queue_string (d, str);
     retval = queue_write (d, "\n", 1);
   }
-  
+
   return retval;
 }
 
@@ -863,17 +860,17 @@ int do_command(struct descriptor_data * d, char *command)
       queue_string_nl(d, d->output_suffix);
     }
   } else if (d->connected &&
-	!strncmp(command, PREFIX_COMMAND, strlen(PREFIX_COMMAND)))
+        !strncmp(command, PREFIX_COMMAND, strlen(PREFIX_COMMAND)))
   {
 #ifdef ROBOT_MODE
     if (!Robot(d->player))
     {
 #ifndef TINKER
       notify(d->player,
-	     "Only robots can use OUTPUTPREFIX; contact a Wizard.");
+             "Only robots can use OUTPUTPREFIX; contact a Wizard.");
 #else /* TINKER */
       notify(d->player,
-	     "Only robots can use OUTPUTPREFIX; contact a Tinker.");
+             "Only robots can use OUTPUTPREFIX; contact a Tinker.");
 #endif /* TINKER */
       return 1;
     }
@@ -883,17 +880,17 @@ int do_command(struct descriptor_data * d, char *command)
     set_userstring(&d->output_prefix, command + strlen(PREFIX_COMMAND));
   } else
     if (d->connected &&
-	!strncmp(command, SUFFIX_COMMAND, strlen(SUFFIX_COMMAND)))
+        !strncmp(command, SUFFIX_COMMAND, strlen(SUFFIX_COMMAND)))
   {
 #ifdef ROBOT_MODE
     if (!Robot(d->player))
     {
 #ifndef TINKER
       notify(d->player,
-	     "Only robots can use OUTPUTSUFFIX; contact a Wizard.");
+             "Only robots can use OUTPUTSUFFIX; contact a Wizard.");
 #else /* TINKER */
       notify(d->player,
-	     "Only robots can use OUTPUTSUFFIX; contact a Tinker.");
+             "Only robots can use OUTPUTSUFFIX; contact a Tinker.");
 #endif /* TINKER */
       return 1;
     }
@@ -905,12 +902,12 @@ int do_command(struct descriptor_data * d, char *command)
     {
       if (d->output_prefix)
       {
-	queue_string_nl(d, d->output_prefix);
+        queue_string_nl(d, d->output_prefix);
       }
       process_command(d->player, command);
       if (d->output_suffix)
       {
-	queue_string_nl(d, d->output_suffix);
+        queue_string_nl(d, d->output_suffix);
       }
     } else
     {
@@ -936,11 +933,11 @@ void check_connect(struct descriptor_data * d, const char *msg)
     {
       queue_string(d, connect_fail);
       writelog("FAILED CONNECT %s on descriptor %d,%d %s\n",
-		user, d->descriptor, d->num, d->hostname);
+                user, d->descriptor, d->num, d->hostname);
     } else
     {
       writelog("CONNECTED %s(%d) on descriptor %d,%d %s\n",
-	       db[player].name, player, d->descriptor, d->num, d->hostname);
+               db[player].name, player, d->descriptor, d->num, d->hostname);
       d->connected = 1;
       d->connected_at = time(NULL);
       d->player = player;
@@ -948,7 +945,7 @@ void check_connect(struct descriptor_data * d, const char *msg)
       do_look_around(player);
 #ifdef CONNECT_MESSAGES
       announce_connect(player);
-#endif				       /* CONNECT_MESSAGES */
+#endif                                       /* CONNECT_MESSAGES */
     }
   } else
   if (!strncmp(command, "cr", 2))
@@ -959,11 +956,11 @@ void check_connect(struct descriptor_data * d, const char *msg)
     {
       queue_string(d, create_fail);
       writelog("FAILED CREATE %s on descriptor %d,%d %s\n",
-	       user, d->descriptor, d->num, d->hostname);
+               user, d->descriptor, d->num, d->hostname);
     } else
     {
       writelog("CREATED %s(%d) on descriptor %d,%d %s\n",
-	       db[player].name, player, d->descriptor, d->num, d->hostname);
+               db[player].name, player, d->descriptor, d->num, d->hostname);
       d->connected = 1;
       d->connected_at = time(0);
       d->player = player;
@@ -971,11 +968,11 @@ void check_connect(struct descriptor_data * d, const char *msg)
       do_look_around(player);
 #ifdef CONNECT_MESSAGES
       announce_connect(player);
-#endif				       /* CONNECT_MESSAGES */
+#endif                                       /* CONNECT_MESSAGES */
     }
 #else
     queue_string(d, REGISTER_MESSAGE);
-#endif				       /* REGISTRATION */
+#endif                                       /* REGISTRATION */
   } else
   {
     welcome_user(d);
@@ -1049,11 +1046,11 @@ char * time_format_1(long dt)
   if (delta->tm_yday > 0)
   {
     sprintf(buf, "%dd %02d:%02d",
-	    delta->tm_yday, delta->tm_hour, delta->tm_min);
+            delta->tm_yday, delta->tm_hour, delta->tm_min);
   } else
   {
     sprintf(buf, "%02d:%02d",
-	    delta->tm_hour, delta->tm_min);
+            delta->tm_hour, delta->tm_min);
   }
   return buf;
 }
@@ -1113,7 +1110,7 @@ void announce_disconnect(dbref player)
   notify_except(db[loc].contents, player, buf);
 }
 
-#endif				       /* CONNECT_MESSAGES */
+#endif                                       /* CONNECT_MESSAGES */
 
 int sigshutdown(int sig, int code, struct sigcontext * scp)
 {
@@ -1131,7 +1128,7 @@ int logsynch()
   return 0;
 }
 
-#endif				       /* DETACH */
+#endif                                       /* DETACH */
 
 #include <sys/stat.h>
 
@@ -1183,7 +1180,7 @@ void main_loop()
 
     if (shutdown_flag)
       break;
-      
+
     /* Set timeout intervals */
     slice_timeout.tv_sec = timeout_msecs / 1000;
     slice_timeout.tv_usec = (timeout_msecs * 1000) % 1000000;
@@ -1200,31 +1197,31 @@ void main_loop()
     for (c = firstc; c; c = c->next)
     { if (c->sock)
       {
-	if (c->ilen < BUFSIZE)
-	  FD_SET(c->sock, &in);
-	len = c->first ? c->first->len : 0;
-	while (c->first && ((c->olen + len + 2) < BUFSIZE))
-	{
-	  templen = c->first->len;
-	  bcopy(&templen, c->outgoing + c->olen, 2);
-	  bcopy(c->first->data, c->outgoing + c->olen + 2, len);
-	  c->olen += len + 2;
-	  ptr = c->first;
-	  c->first = ptr->next;
-	  FREE(ptr->data);
-	  FREE(ptr);
-	  if (c->last == ptr)
-	    c->last = 0;
-	  len = c->first ? c->first->len : 0;
-	}
-	if (c->olen)
-	  FD_SET(c->sock, &out);
+        if (c->ilen < BUFSIZE)
+          FD_SET(c->sock, &in);
+        len = c->first ? c->first->len : 0;
+        while (c->first && ((c->olen + len + 2) < BUFSIZE))
+        {
+          templen = c->first->len;
+          bcopy(&templen, c->outgoing + c->olen, 2);
+          bcopy(c->first->data, c->outgoing + c->olen + 2, len);
+          c->olen += len + 2;
+          ptr = c->first;
+          c->first = ptr->next;
+          FREE(ptr->data);
+          FREE(ptr);
+          if (c->last == ptr)
+            c->last = 0;
+          len = c->first ? c->first->len : 0;
+        }
+        if (c->olen)
+          FD_SET(c->sock, &out);
       }
     }
 
     /* Check for changes on inputs or outputs */
     timeout = (waiting_cmds) ? poll_timeout : slice_timeout;
-    
+
     if (select(lastsock, &in, &out, (fd_set *) 0, &timeout) < 0)
     { continue; }
 
@@ -1234,26 +1231,26 @@ void main_loop()
       newsock = accept(sock, (struct sockaddr *) & sin, &len);
       if (newsock >= 0)
       {
-	if (newsock >= lastsock)
-	  lastsock = newsock + 1;
-	if (fcntl(newsock, F_SETFL, FNDELAY) == -1)
-	{
-	  perror("make_nonblocking: fcntl");
-	}
-	MALLOC(tempc, struct conc_list, 1);
-	tempc->next = firstc;
-	tempc->firstd = 0;
-	tempc->first = 0;
-	tempc->last = 0;
-	tempc->status = 0;
-	/* Imcomming and outgoing I/O buffers */
-	MALLOC(tempc->incoming, char, BUFSIZE);
-	tempc->ilen = 0;
-	MALLOC(tempc->outgoing, char, BUFSIZE);
-	tempc->olen = 0;
-	firstc = tempc;
-	firstc->sock = newsock;
-	writelog("CONCENTRATOR CONNECT: sock %d, addr %x\n", newsock, sin.sin_addr.s_addr);
+        if (newsock >= lastsock)
+          lastsock = newsock + 1;
+        if (fcntl(newsock, F_SETFL, FNDELAY) == -1)
+        {
+          perror("make_nonblocking: fcntl");
+        }
+        MALLOC(tempc, struct conc_list, 1);
+        tempc->next = firstc;
+        tempc->firstd = 0;
+        tempc->first = 0;
+        tempc->last = 0;
+        tempc->status = 0;
+        /* Imcomming and outgoing I/O buffers */
+        MALLOC(tempc->incoming, char, BUFSIZE);
+        tempc->ilen = 0;
+        MALLOC(tempc->outgoing, char, BUFSIZE);
+        tempc->olen = 0;
+        firstc = tempc;
+        firstc->sock = newsock;
+        writelog("CONCENTRATOR CONNECT: sock %d, addr %x\n", newsock, sin.sin_addr.s_addr);
       }
     }
     for (c = firstc; c; c = nextc)
@@ -1261,153 +1258,153 @@ void main_loop()
       nextc = c->next;
 #ifdef CHECKC
       if (!(c->sock))
-	writelog("CONSISTENCY CHECK: Concentrator found with null socket #\n");
+        writelog("CONSISTENCY CHECK: Concentrator found with null socket #\n");
 #endif
       if ((FD_ISSET(c->sock, &in)) && (c->ilen < BUFSIZE))
       {
-	int             i;
-	len = recv(c->sock, c->incoming + c->ilen,
-		   BUFSIZE - c->ilen, 0);
-	if (len == 0)
-	{
-	  struct message *mptr, *tempm;
-	  writelog("CONCENTRATOR DISCONNECT: %d\n", c->sock);
-	  close(c->sock);
-	  d = c->firstd;
-	  while (d)
-	  {
-	    shutdownsock(d);
-	    tempd = d;
-	    d = d->next;
-	    FREE(tempd);
-	  }
-	  if (firstc == c)
-	    firstc = firstc->next;
-	  else
-	    lastc->next = c->next;
-	  FREE(c->incoming);
-	  FREE(c->outgoing);
-	  mptr = c->first;
-	  while (mptr)
-	  {
-	    tempm = mptr;
-	    mptr = mptr->next;
-	    FREE(mptr->data);
-	    FREE(mptr);
-	  }
-	  FREE(c);
-	  break;
-	} else
-	if (len < 0)
-	{
-	  writelog("recv: %s\n", strerror(errno));
-	} else
-	{
-	  int             num;
+        int             i;
+        len = recv(c->sock, c->incoming + c->ilen,
+                   BUFSIZE - c->ilen, 0);
+        if (len == 0)
+        {
+          struct message *mptr, *tempm;
+          writelog("CONCENTRATOR DISCONNECT: %d\n", c->sock);
+          close(c->sock);
+          d = c->firstd;
+          while (d)
+          {
+            shutdownsock(d);
+            tempd = d;
+            d = d->next;
+            FREE(tempd);
+          }
+          if (firstc == c)
+            firstc = firstc->next;
+          else
+            lastc->next = c->next;
+          FREE(c->incoming);
+          FREE(c->outgoing);
+          mptr = c->first;
+          while (mptr)
+          {
+            tempm = mptr;
+            mptr = mptr->next;
+            FREE(mptr->data);
+            FREE(mptr);
+          }
+          FREE(c);
+          break;
+        } else
+        if (len < 0)
+        {
+          writelog("recv: %s\n", strerror(errno));
+        } else
+        {
+          int             num;
 
-	  c->ilen += len;
-	  while (c->ilen > 2)
-	  {
-	    bcopy(c->incoming, &templen, 2);
+          c->ilen += len;
+          while (c->ilen > 2)
+          {
+            bcopy(c->incoming, &templen, 2);
 #ifdef CHECKC
-	    if (templen < 1)
-	      writelog("CONSISTENCY CHECK: Message received with length < 1\n");
+            if (templen < 1)
+              writelog("CONSISTENCY CHECK: Message received with length < 1\n");
 #endif
-	    if (c->ilen >= (templen + 2))
-	    {
-	      num = *(c->incoming + 2);
-	      /* Is it coming from the command user #? */
-	      if (num == 0)
-	      {
-		/* Proccess commands */
-		switch (*(c->incoming + 3))
-		{
-		case 1:	       /* connect */
-		  d = initializesock(&sin);
-		  d->descriptor = c->sock;
-		  d->next = c->firstd;
-		  c->firstd = d;
-		  d->num = *(c->incoming + 4);
-		  MALLOC(d->hostname, char,
-			 templen - 5);
-		  bcopy(c->incoming + 9, d->hostname,
-			templen - 6);
-		  *(d->hostname + templen - 7) = 0;
+            if (c->ilen >= (templen + 2))
+            {
+              num = *(c->incoming + 2);
+              /* Is it coming from the command user #? */
+              if (num == 0)
+              {
+                /* Proccess commands */
+                switch (*(c->incoming + 3))
+                {
+                case 1:               /* connect */
+                  d = initializesock(&sin);
+                  d->descriptor = c->sock;
+                  d->next = c->firstd;
+                  c->firstd = d;
+                  d->num = *(c->incoming + 4);
+                  MALLOC(d->hostname, char,
+                         templen - 5);
+                  bcopy(c->incoming + 9, d->hostname,
+                        templen - 6);
+                  *(d->hostname + templen - 7) = 0;
 #ifdef DEBUG
-		  writelog("USER CONNECT %d,%d from host %s\n", c->sock, d->num, d->hostname);
+                  writelog("USER CONNECT %d,%d from host %s\n", c->sock, d->num, d->hostname);
 #endif
-		  break;
-		case 2:	       /* disconnect */
-		  tempd = 0;
-		  d = c->firstd;
-		  num = *(c->incoming + 4);
-		  while (d)
-		  {
-		    if (d->num == num)
-		    {
-		      writelog("USER ABORTED CONNECTION %d,%d %s\n",
-			       c->sock, d->num, d->hostname);
+                  break;
+                case 2:               /* disconnect */
+                  tempd = 0;
+                  d = c->firstd;
+                  num = *(c->incoming + 4);
+                  while (d)
+                  {
+                    if (d->num == num)
+                    {
+                      writelog("USER ABORTED CONNECTION %d,%d %s\n",
+                               c->sock, d->num, d->hostname);
 
-		      shutdownsock(d);
-		      if (c->firstd == d)
-			c->firstd = d->next;
-		      else
-			tempd->next = d->next;
-		      FREE(d);
-		      break;
-		    }
-		    tempd = d;
-		    d = d->next;
-		  }
+                      shutdownsock(d);
+                      if (c->firstd == d)
+                        c->firstd = d->next;
+                      else
+                        tempd->next = d->next;
+                      FREE(d);
+                      break;
+                    }
+                    tempd = d;
+                    d = d->next;
+                  }
 #ifdef CHECKC
-		  if (!d)
-		    writelog("CONSISTENCY CHECK: Disconnect Received for unknown user %d,%d\n", c->sock, num);
+                  if (!d)
+                    writelog("CONSISTENCY CHECK: Disconnect Received for unknown user %d,%d\n", c->sock, num);
 #endif
-		  break;
+                  break;
 
-		  /*
-		   * This take a message from a concentrator, and logs it in
-		   * the log file 
-		   */
-		case 4:
-		  {
-		    char            buffer[2048];
-		    bcopy(c->incoming + 4, buffer,
-			  templen - 2);
-		    *(buffer + templen - 1) = 0;
-		    writelog(buffer);
-		    break;
-		  }
+                  /*
+                   * This take a message from a concentrator, and logs it in
+                   * the log file
+                   */
+                case 4:
+                  {
+                    char            buffer[2048];
+                    bcopy(c->incoming + 4, buffer,
+                          templen - 2);
+                    *(buffer + templen - 1) = 0;
+                    writelog(buffer);
+                    break;
+                  }
 #ifdef CHECKC
-		default:
-		  writelog("CONSISTENCY CHECK: Received unknown command from concentrator\n");
+                default:
+                  writelog("CONSISTENCY CHECK: Received unknown command from concentrator\n");
 #endif
-		}
-	      } else
-	      {
-		d = c->firstd;
-		while (d)
-		{
-		  if (d->num == num)
-		  {
-		    process_input(d, c->incoming + 3,
-				  templen - 1);
-		    break;
-		  }
-		  d = d->next;
-		}
+                }
+              } else
+              {
+                d = c->firstd;
+                while (d)
+                {
+                  if (d->num == num)
+                  {
+                    process_input(d, c->incoming + 3,
+                                  templen - 1);
+                    break;
+                  }
+                  d = d->next;
+                }
 #ifdef CHECKC
-		if (!d)
-		  writelog("CONSISTENCY CHECK: Message received for unknown user %d,%d\n", c->sock, num);
+                if (!d)
+                  writelog("CONSISTENCY CHECK: Message received for unknown user %d,%d\n", c->sock, num);
 #endif
-	      }
-	      bcopy(c->incoming + templen + 2, c->incoming,
-		    (c->ilen - templen - 2));
-	      c->ilen = c->ilen - templen - 2;
-	    } else
-	      break;
-	  }
-	}
+              }
+              bcopy(c->incoming + templen + 2, c->incoming,
+                    (c->ilen - templen - 2));
+              c->ilen = c->ilen - templen - 2;
+            } else
+              break;
+          }
+        }
       }
       lastc = c;
     }
@@ -1416,15 +1413,15 @@ void main_loop()
     {
       if (FD_ISSET(c->sock, &out))
       {
-	if (c->olen)
-	{
-	  len = send(c->sock, c->outgoing, c->olen, 0);
-	  if (len > 0)
-	  {
-	    c->olen -= len;
-	    bcopy(c->outgoing + len, c->outgoing, c->olen);
-	  }
-	}
+        if (c->olen)
+        {
+          len = send(c->sock, c->outgoing, c->olen, 0);
+          if (len > 0)
+          {
+            c->olen -= len;
+            bcopy(c->outgoing + len, c->outgoing, c->olen);
+          }
+        }
       }
     }
   }
@@ -1444,32 +1441,32 @@ void process_output(struct conc_list * c)
     {
       if (cur->nchars < 512)
       {
-	if ((c->olen + cur->nchars + 3) < BUFSIZE)
-	{
-	  templen = cur->nchars + 1;
-	  bcopy(&templen, c->outgoing + c->olen, 2);
-	  *(c->outgoing + c->olen + 2) = d->num;
-	  strncpy(c->outgoing + c->olen + 3, cur->start, cur->nchars);
-	  d->output_size -= cur->nchars;
-	  c->olen += cur->nchars + 3;
-	  if (!cur->nxt)
-	    d->output.tail = qp;
-	  *qp = cur->nxt;
-	  free_text_block(cur);
-	}
+        if ((c->olen + cur->nchars + 3) < BUFSIZE)
+        {
+          templen = cur->nchars + 1;
+          bcopy(&templen, c->outgoing + c->olen, 2);
+          *(c->outgoing + c->olen + 2) = d->num;
+          strncpy(c->outgoing + c->olen + 3, cur->start, cur->nchars);
+          d->output_size -= cur->nchars;
+          c->olen += cur->nchars + 3;
+          if (!cur->nxt)
+            d->output.tail = qp;
+          *qp = cur->nxt;
+          free_text_block(cur);
+        }
       } else
       {
-	if ((c->olen + 512 + 3) < BUFSIZE)
-	{
-	  templen = 512 + 1;
-	  bcopy(&templen, c->outgoing + c->olen, 2);
-	  *(c->outgoing + c->olen + 2) = d->num;
-	  strncpy(c->outgoing + c->olen + 3, cur->start, 512);
-	  d->output_size -= 512;
-	  c->olen += 512 + 3;
-	  cur->nchars -= 512;
-	  cur->start += 512;
-	}
+        if ((c->olen + 512 + 3) < BUFSIZE)
+        {
+          templen = 512 + 1;
+          bcopy(&templen, c->outgoing + c->olen, 2);
+          *(c->outgoing + c->olen + 2) = d->num;
+          strncpy(c->outgoing + c->olen + 3, cur->start, 512);
+          d->output_size -= 512;
+          c->olen += 512 + 3;
+          cur->nchars -= 512;
+          cur->start += 512;
+        }
       }
     }
   }
@@ -1488,18 +1485,18 @@ void boot_off(dbref player)
     {
       if (d->connected && d->player == player)
       {
-	header[0] = 0;
-	header[1] = 2;
-	header[2] = d->num;
-	queue_message(c, header, 3);
-	process_output(c);
-	if (lastd)
-	  lastd->next = d->next;
-	else
-	  c->firstd = d->next;
-	shutdownsock(d);
-	FREE(d);
-	return;
+        header[0] = 0;
+        header[1] = 2;
+        header[2] = d->num;
+        queue_message(c, header, 3);
+        process_output(c);
+        if (lastd)
+          lastd->next = d->next;
+        else
+          c->firstd = d->next;
+        shutdownsock(d);
+        FREE(d);
+        return;
       }
       lastd = d;
     }
@@ -1553,11 +1550,11 @@ void do_tune (dbref player, const char *varname, const char *valstr)
   { notify (player, "What tune do you want to hear?");
     return;
   }
-  
+
   if (!varname || !*varname  || !valstr || !*valstr)
   { sprintf (buf, "Current server settings:\n  slice %d ms, burst %d cmds\n  timeout %d ms, poll %d ms, extra %s",
-  	     slice_msecs, burst_quota, timeout_msecs, poll_msecs,
-	     allow_extra ? "yes" : "no");
+             slice_msecs, burst_quota, timeout_msecs, poll_msecs,
+             allow_extra ? "yes" : "no");
     notify (player, buf);
     return;
   }
@@ -1573,13 +1570,13 @@ void do_tune (dbref player, const char *varname, const char *valstr)
     }
     return;
   }
-  
+
   if (!isdigit (*valstr) || (value = atoi (valstr)) <= 0)
   { notify (player,
-  	    "Please enter a positive integer value for the second parameter.");
+            "Please enter a positive integer value for the second parameter.");
     return;
   }
-  
+
   if (!strncmp (varname, "slice", vnlen))
   { slice_msecs = value;
     sprintf (buf, "Time slice set to %d ms.", slice_msecs);
@@ -1598,6 +1595,6 @@ void do_tune (dbref player, const char *varname, const char *valstr)
   }
   else
   { strcpy (buf, "Variables are: slice, burst, timeout, poll, extra"); }
-  
+
   notify (player, buf);
 }
