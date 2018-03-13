@@ -1,3 +1,14 @@
+./concentrate
+./decompress
+./dump
+./extract
+./netmud
+./netmud.conc
+./sanity-check
+
+*.log
+*.dump
+
 # Prerequisites
 *.d
 

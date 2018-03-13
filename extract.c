@@ -1,10 +1,14 @@
 #include "copyright.h"
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <string.h>
 #include <ctype.h>
 #include <sys/param.h>
 
 #include "db.h"
+#include "externs.h"
 
 long atosec (const char *str);
 
@@ -138,7 +142,7 @@ static int isok(dbref x)
 	  break;
       }
     }
-# endif TIMESTAMPS
+# endif /* TIMESTAMPS */
 	
     /* not in the list, can only get it if include_all is on */
     /* or its owned by DEFAULT_OWNER */
@@ -356,7 +360,7 @@ static void do_write(void)
 
 int reach_lvl = 0;
 
-make_reachable (dbref x)
+void make_reachable(dbref x)
 {   dbref e, r;
     int i;
     
@@ -426,7 +430,7 @@ void main(int argc, char **argv)
 		     "Excluding rooms not used within the last %d seconds\n",
 	    	     usecutoff);
 	    usecutoff = now - usecutoff;
-# endif TIMESTAMPS
+# endif /* TIMESTAMPS */
 	} else if (!strcmp(*argv, "all")) {
 	    include_all = 1;
 	} else if (!strcmp(*argv, "reachable")) {

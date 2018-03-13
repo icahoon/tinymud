@@ -1,9 +1,11 @@
 #include "copyright.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #include "db.h"
 #include "config.h"
+#include "externs.h"
 
 # define HAS_ENTRANCES 0x40000000
 

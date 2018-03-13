@@ -5,9 +5,11 @@
 /* modified interface.c to support LOTS of people, using a concentrator */
 /* May 1990, Robert Hood */
 
-/* #define CHECKC	/* consistency checking */
+/* #define CHECKC */	/* consistency checking */
 
 #include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 #include <sys/param.h>
 #include <sys/types.h>
 #include <sys/file.h>
@@ -21,10 +23,13 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
+#include <string.h>
+#include <time.h>
 
 #include "config.h"
 #include "db.h"
 #include "interface.h"
+#include "externs.h"
 
 #define BUFSIZE 0xFFFF
 
@@ -110,6 +115,7 @@ void            add_to_queue(struct text_queue * q, const char *b, int n);
 int             flush_queue(struct text_queue * q, int n);
 int             queue_write(struct descriptor_data * d, const char *b, int n);
 int             queue_string(struct descriptor_data * d, const char *s);
+int             queue_string_nl(struct descriptor_data * d, const char *str);
 void            freeqs(struct descriptor_data * d);
 void            welcome_user(struct descriptor_data * d);
 void            do_motd(dbref);
@@ -161,7 +167,7 @@ long		allow_extra = COMMAND_ALLOW_EXTRA;
 /* Number of players with commands waiting */
 static int	waiting_cmds = 0;
 
-start_port()
+void start_port()
 {
   int             temp;
   struct sockaddr_in sin;
@@ -192,8 +198,7 @@ start_port()
   }
 }
 
-struct timeval
-                timeval_sub(struct timeval now, struct timeval then)
+struct timeval timeval_sub(struct timeval now, struct timeval then)
 {
                   now.tv_sec -= then.tv_sec;
   now.tv_usec -= then.tv_usec;
@@ -205,8 +210,7 @@ struct timeval
   return now;
 }
 
-struct timeval
-                msec_add(struct timeval t, int x)
+struct timeval msec_add(struct timeval t, int x)
 {
                   t.tv_sec += x / 1000;
   t.tv_usec += (x % 1000) * 1000;
@@ -218,8 +222,7 @@ struct timeval
   return t;
 }
 
-struct timeval
-                update_quotas(struct timeval last, struct timeval current)
+struct timeval update_quotas(struct timeval last, struct timeval current)
 {
   int             nslices;
   struct descriptor_data *d;
@@ -240,8 +243,7 @@ struct timeval
   return msec_add(last, nslices * slice_msecs);
 }
 
-int
-                notify(dbref player2, const char *msg)
+int notify(dbref player2, const char *msg)
 {
   struct descriptor_data *d;
   struct conc_list *c;
@@ -264,8 +266,7 @@ int
   return (retval);
 }
 
-int
-                process_input(d, buf, got)
+int process_input(d, buf, got)
   struct descriptor_data *d;
   char           *buf;
   int             got;
@@ -306,7 +307,7 @@ int
   return 1;
 }
 
-void            process_commands()
+void process_commands()
 {
   struct descriptor_data *d, *dnext, *dlast;
   struct conc_list *c;
@@ -405,10 +406,10 @@ void dump_users(struct descriptor_data * e, char *user)
 	       "Current Players:\n");
 #ifdef GOD_MODE
   god = wizard = e->connected && God(e->player);
-#else  GOD_MODE
+#else  /* GOD_MODE */
   god = e->connected && God(e->player);
   wizard = e->connected && Wizard(e->player);
-#endif GOD_MODE
+#endif /* GOD_MODE */
 
   if (reversed)
   {
@@ -622,15 +623,13 @@ void set_signals(void)
 # endif
 }
 
-int
-                msec_diff(struct timeval now, struct timeval then)
+int msec_diff(struct timeval now, struct timeval then)
 {
                   return ((now.tv_sec - then.tv_sec) * 1000
 		       +               (now.tv_usec - then.tv_usec) / 1000);
 }
 
-void
-                clearstrings(struct descriptor_data * d)
+void clearstrings(struct descriptor_data * d)
 {
   if              (d->output_prefix)
   {
@@ -644,8 +643,7 @@ void
   }
 }
 
-void
-                shutdownsock(struct descriptor_data * d)
+void shutdownsock(struct descriptor_data * d)
 {
   if              (d->connected)
   {
@@ -664,8 +662,7 @@ void
   freeqs(d);
 }
 
-struct descriptor_data *
-                initializesock(struct sockaddr_in * a)
+struct descriptor_data * initializesock(struct sockaddr_in * a)
 {
   struct descriptor_data *d;
 
@@ -690,8 +687,7 @@ struct descriptor_data *
   return d;
 }
 
-struct text_block *
-                make_text_block(const char *s, int n)
+struct text_block * make_text_block(const char *s, int n)
 {
   struct text_block *p;
 
@@ -704,8 +700,7 @@ struct text_block *
   return p;
 }
 
-void
-                add_to_queue(struct text_queue * q, const char *b, int n)
+void add_to_queue(struct text_queue * q, const char *b, int n)
 {
   struct text_block *p;
 
@@ -718,8 +713,7 @@ void
   q->tail = &p->nxt;
 }
 
-int
-                flush_queue(struct text_queue * q, int n)
+int flush_queue(struct text_queue * q, int n)
 {
   struct text_block *p;
   int             really_flushed = 0;
@@ -742,8 +736,7 @@ int
   return really_flushed;
 }
 
-int
-                queue_write(struct descriptor_data * d, const char *b, int n)
+int queue_write(struct descriptor_data * d, const char *b, int n)
 {
   int             space;
 
@@ -755,14 +748,12 @@ int
   return n;
 }
 
-int
-                queue_string(struct descriptor_data * d, const char *s)
+int queue_string(struct descriptor_data * d, const char *s)
 {
                   return queue_write(d, s, strlen(s));
 }
 
-int
-                queue_string_nl(struct descriptor_data * d, const char *str)
+int queue_string_nl(struct descriptor_data * d, const char *str)
 { char buf[MAX_OUTPUT], *t;
   const char *s;
   int len = 0, retval;
@@ -780,8 +771,7 @@ int
   return retval;
 }
 
-void
-                freeqs(struct descriptor_data * d)
+void freeqs(struct descriptor_data * d)
 {
   struct text_block *cur, *next;
 
@@ -811,8 +801,7 @@ void
   d->raw_input_at = 0;
 }
 
-void
-                welcome_user(struct descriptor_data * d)
+void welcome_user(struct descriptor_data * d)
 {
   queue_string(d, WELCOME_MESSAGE);
   file_date(d, NEWS_FILE);
@@ -821,14 +810,12 @@ void
 # endif
 }
 
-void
-                goodbye_user(struct descriptor_data * d)
+void goodbye_user(struct descriptor_data * d)
 {
                   queue_string(d, LEAVE_MESSAGE);
 }
 
-char           *
-                strsave(const char *s)
+char * strsave(const char *s)
 {
   char           *p;
 
@@ -839,14 +826,12 @@ char           *
   return p;
 }
 
-void
-                save_command(struct descriptor_data * d, const char *command)
+void save_command(struct descriptor_data * d, const char *command)
 {
                   add_to_queue(&d->input, command, strlen(command) + 1);
 }
 
-void
-                set_userstring(char **userstring, const char *command)
+void set_userstring(char **userstring, const char *command)
 {
   if              (*userstring)
   {
@@ -859,8 +844,7 @@ void
     *userstring = strsave(command);
 }
 
-int
-                do_command(struct descriptor_data * d, char *command)
+int do_command(struct descriptor_data * d, char *command)
 {
   if              (!strcmp(command, QUIT_COMMAND))
   {
@@ -887,15 +871,15 @@ int
 #ifndef TINKER
       notify(d->player,
 	     "Only robots can use OUTPUTPREFIX; contact a Wizard.");
-#else TINKER
+#else /* TINKER */
       notify(d->player,
 	     "Only robots can use OUTPUTPREFIX; contact a Tinker.");
-#endif TINKER
+#endif /* TINKER */
       return 1;
     }
     if (!d->connected)
       return 1;
-#endif ROBOT_MODE
+#endif /* ROBOT_MODE */
     set_userstring(&d->output_prefix, command + strlen(PREFIX_COMMAND));
   } else
     if (d->connected &&
@@ -907,13 +891,13 @@ int
 #ifndef TINKER
       notify(d->player,
 	     "Only robots can use OUTPUTSUFFIX; contact a Wizard.");
-#else TINKER
+#else /* TINKER */
       notify(d->player,
 	     "Only robots can use OUTPUTSUFFIX; contact a Tinker.");
-#endif TINKER
+#endif /* TINKER */
       return 1;
     }
-#endif ROBOT_MODE
+#endif /* ROBOT_MODE */
     set_userstring(&d->output_suffix, command + strlen(SUFFIX_COMMAND));
   } else
   {
@@ -936,8 +920,7 @@ int
   return 1;
 }
 
-void
-                check_connect(struct descriptor_data * d, const char *msg)
+void check_connect(struct descriptor_data * d, const char *msg)
 {
   char            command[MAX_COMMAND_LEN];
   char            user[MAX_COMMAND_LEN];
@@ -999,8 +982,7 @@ void
   }
 }
 
-void
-                parse_connect(const char *msg, char *command, char *user, char *pass)
+void parse_connect(const char *msg, char *command, char *user, char *pass)
 {
   char           *p;
 
@@ -1024,8 +1006,7 @@ void
   *p = '\0';
 }
 
-void
-                close_sockets(void)
+void close_sockets(void)
 {
   struct descriptor_data *d, *dnext;
   struct conc_list *c;
@@ -1040,14 +1021,12 @@ void
   close(sock);
 }
 
-void
-                emergency_shutdown(void)
+void emergency_shutdown(void)
 {
                   close_sockets();
 }
 
-int
-                bailout(int sig, int code, struct sigcontext * scp)
+int bailout(int sig, int code, struct sigcontext * scp)
 {
   long           *ptr;
   int             i;
@@ -1061,8 +1040,7 @@ int
   return 0;
 }
 
-char           *
-                time_format_1(long dt)
+char * time_format_1(long dt)
 {
   register struct tm *delta;
   static char     buf[64];
@@ -1080,8 +1058,7 @@ char           *
   return buf;
 }
 
-char           *
-                time_format_2(long dt)
+char * time_format_2(long dt)
 {
   register struct tm *delta;
   static char     buf[64];
@@ -1106,8 +1083,7 @@ char           *
 }
 
 #ifdef CONNECT_MESSAGES
-void
-                announce_connect(dbref player)
+void announce_connect(dbref player)
 {
   dbref           loc;
   char            buf[BUFFER_LEN];
@@ -1122,8 +1098,7 @@ void
   notify_except(db[loc].contents, player, buf);
 }
 
-void
-                announce_disconnect(dbref player)
+void announce_disconnect(dbref player)
 {
   dbref           loc;
   char            buf[BUFFER_LEN];
@@ -1140,8 +1115,7 @@ void
 
 #endif				       /* CONNECT_MESSAGES */
 
-int
-                sigshutdown(int sig, int code, struct sigcontext * scp)
+int sigshutdown(int sig, int code, struct sigcontext * scp)
 {
                   writelog("SHUTDOWN: on signal %d code %d\n", sig, code);
   shutdown_flag = 1;
@@ -1149,8 +1123,7 @@ int
 }
 
 #ifdef DETACH
-int
-                logsynch()
+int logsynch()
 {
                   freopen(logfile, "a", stderr);
   setbuf(stderr, NULL);
@@ -1162,11 +1135,9 @@ int
 
 #include <sys/stat.h>
 
-void
-                file_date(struct descriptor_data * d, char *file)
+void file_date(struct descriptor_data * d, const char *file)
 {
   static char     buf[80];
-  extern char    *ctime(long *clock);
   struct stat     statb;
   char           *tstring;
   char           *cp;
@@ -1185,7 +1156,7 @@ void
   queue_string(d, (char *)buf);
 }
 
-void            main_loop()
+void main_loop()
 {
   struct message *ptr;
   int             newsock, lastsock, len, loop;
@@ -1459,7 +1430,7 @@ void            main_loop()
   }
 }
 
-void            process_output(struct conc_list * c)
+void process_output(struct conc_list * c)
 {
   struct descriptor_data *d;
   struct text_block **qp, *cur;
@@ -1504,7 +1475,7 @@ void            process_output(struct conc_list * c)
   }
 }
 
-void            boot_off(dbref player)
+void boot_off(dbref player)
 {
   struct conc_list *c;
   struct descriptor_data *d, *lastd;
@@ -1535,7 +1506,7 @@ void            boot_off(dbref player)
   }
 }
 
-void            queue_message(struct conc_list * c, char *data, int len)
+void queue_message(struct conc_list * c, char *data, int len)
 {
   struct message *ptr;
 

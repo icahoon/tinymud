@@ -2,6 +2,7 @@
 
 /* Predicates for testing various conditions */
 
+#include <string.h>
 #include <ctype.h>
 
 #include "db.h"
@@ -26,7 +27,7 @@ int can_link_to(dbref who, object_flag_type what, dbref where)
 	    ((what == TYPE_PLAYER || what == TYPE_THING) &&
 #ifdef ROBOT_MODE
 	     (what != TYPE_PLAYER || !Robot(who) || !Robot(where)) &&
-#endif ROBOT_MODE
+#endif /* ROBOT_MODE */
 	     Flag(where,ABODE))));
     }
 
@@ -49,7 +50,7 @@ int could_doit(dbref player, dbref thing)
        db[thing].location >= 0 &&
        Robot(db[thing].location) &&
        db[db[thing].location].owner != player) return 0;
-#endif ROBOT_MODE
+#endif /* ROBOT_MODE */
 
     return(eval_boolexp (player, db[thing].key));
 }
@@ -169,7 +170,7 @@ int ok_name(const char *name)
 	    && string_compare(name, "Going")
     	    && string_compare(name, "Huh?")
     	    && string_compare(name, "[")
-#endif NOFAKES
+#endif /* NOFAKES */
 	    && string_compare(name, "me")	    
 	    && string_compare(name, "home")
 	    && string_compare(name, "here"));

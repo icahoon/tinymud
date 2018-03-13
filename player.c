@@ -1,5 +1,7 @@
 #include "copyright.h"
 
+#include <string.h>
+
 #include "db.h"
 #include "config.h"
 #include "interface.h"
@@ -18,7 +20,7 @@ dbref lookup_player(const char *name)
     }
     return NOTHING;
 }
-#endif PLAYER_LIST
+#endif /* PLAYER_LIST */
 
 dbref connect_player(const char *name, const char *password)
 {
@@ -54,7 +56,7 @@ dbref create_player(const char *name, const char *password)
 
 #ifdef PLAYER_LIST
     add_player(player);
-#endif PLAYER_LIST    
+#endif /* PLAYER_LIST     */
 
     return player;
 }

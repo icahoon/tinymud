@@ -1,5 +1,8 @@
 #include "copyright.h"
 
+#include <stdlib.h>
+#include <time.h>
+
 #include "db.h"
 #include "config.h"
 #include "interface.h"
@@ -92,7 +95,7 @@ void enter_room(dbref player, dbref loc)
 #ifdef TIMESTAMPS
 	db[loc].usecnt++;
 	db[loc].lastused = time (0);
-#endif TIMESTAMPS
+#endif /* TIMESTAMPS */
 
 
 	if(old != NOTHING) {
@@ -196,7 +199,7 @@ void do_move(dbref player, const char *direction)
 #ifdef TIMESTAMPS
 	    db[exit].usecnt++;
 	    db[exit].lastused = time (0);
-#endif TIMESTAMPS
+#endif /* TIMESTAMPS */
 
 	    /* check to see if we got through */
 	    if(can_doit(player, exit, "You can't go that way.")) {
@@ -227,7 +230,7 @@ void do_get(dbref player, const char *what)
 #ifdef TIMESTAMPS
 	    db[thing].usecnt++;
 	    db[thing].lastused = time (0);
-#endif TIMESTAMPS
+#endif /* TIMESTAMPS */
 	    if(can_doit(player, thing, "You can't pick that up.")) {
 		moveto(thing, player);
 		notify(player, "Taken.");
@@ -305,9 +308,9 @@ void do_drop(dbref player, const char *name)
 	    notify(player, buf);
 #ifndef TINKER
 	    sprintf(buf, "%s sacrifices %s.", db[player].name, db[thing].name);
-#else   TINKER
+#else   /* TINKER */
 	    sprintf(buf, "%s donates %s.", db[player].name, db[thing].name);
-#endif  TINKER
+#endif  /* TINKER */
 	    notify_except(db[loc].contents, player, buf);
 
 	    /* check for reward */
