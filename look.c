@@ -281,22 +281,22 @@ void do_examine(dbref player, const char *name)
     if(db[thing].usecnt > 0) {
         switch (Typeof (thing)) {
           case TYPE_PLAYER:
-            sprintf(buf, "Last command: %24.24s, %d command%s total",
+            sprintf(buf, "Last command: %24.24s, %ld command%s total",
                         ctime (&db[thing].lastused), db[thing].usecnt,
                     (db[thing].usecnt == 1) ? "" : "s");
             break;
           case TYPE_EXIT:
-            sprintf(buf, "Last used: %24.24s, %d use%s total",
+            sprintf(buf, "Last used: %24.24s, %ld use%s total",
                         ctime (&db[thing].lastused), db[thing].usecnt,
                     (db[thing].usecnt == 1) ? "" : "s");
             break;
           case TYPE_ROOM:
-            sprintf(buf, "Last entered: %24.24s, %d use%s total",
+            sprintf(buf, "Last entered: %24.24s, %ld use%s total",
                         ctime (&db[thing].lastused), db[thing].usecnt,
                     (db[thing].usecnt == 1) ? "" : "s");
             break;
           case TYPE_THING:
-            sprintf(buf, "Last used: %24.24s, %d use%s total",
+            sprintf(buf, "Last used: %24.24s, %ld use%s total",
                         ctime (&db[thing].lastused), db[thing].usecnt,
                     (db[thing].usecnt == 1) ? "" : "s");
             break;

@@ -387,12 +387,12 @@ void do_set(dbref player, const char *name, const char *flag)
 
     /* check for restricted flag */
     if(!Wizard(player)
-       && (f == TEMPLE
+       && (f == TEMPLE || (
 #ifdef RESTRICTED_BUILDING
-           || f == BUILDER
+           f == BUILDER
 #endif /* RESTRICTED_BUILDING */
-           || f == DARK &&
-           (Typeof(thing) != TYPE_ROOM && Typeof(thing) != TYPE_THING))) {
+           f == DARK &&
+           (Typeof(thing) != TYPE_ROOM && Typeof(thing) != TYPE_THING)))) {
         notify(player, "Permission denied.");
         return;
     }
@@ -482,7 +482,7 @@ void do_set(dbref player, const char *name, const char *flag)
 
 void do_recycle(dbref player, const char *name)
 {
-    dbref thing, recip, i;
+    dbref thing, recip;
     char buf[BUFFER_LEN];
 
     if (!name || !*name) {

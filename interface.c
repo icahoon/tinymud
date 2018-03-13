@@ -104,7 +104,7 @@ int             process_input(struct descriptor_data * d, char *buf, int got);
 void            process_commands();
 void            dump_users(struct descriptor_data * e, char *user);
 void            free_text_block(struct text_block * t);
-void            main(int argc, char **argv);
+int             main(int argc, char **argv);
 void            set_signals();
 int             msec_diff(struct timeval now, struct timeval then);
 void            clearstrings(struct descriptor_data * d);
@@ -149,7 +149,6 @@ static const char *connect_fail = "Either that player does not exist, or has a d
 static const char *create_fail = "Either there is already a player with that name, or that name is illegal.\n";
 #endif                                       /* REGISTRATION */
 static const char *flushed_message = "<Output Flushed>\n";
-static const char *shutdown_message = "Going down - Bye\n";
 
 int             sock;
 int             shutdown_flag = 0;
@@ -312,16 +311,16 @@ void process_commands()
   struct descriptor_data *d, *dnext, *dlast;
   struct conc_list *c;
   struct text_block *t;
-  char            header[4];
+  char header[4];
   int overquota, underquota, allow_over=0;
 
   /* Check if there is a player with a command under quota */
-  if (allow_extra)
-  { for (c = firstc, allow_over=1; c && allow_over; c = c->next)
-    { for (d = c->firstd; d; d = d->next)
-      { if (d->quota > 0 && d->input.head ||
-            d->output.head)
-        { allow_over = 0; break; }
+  if (allow_extra) {
+    for (c = firstc, allow_over=1; c && allow_over; c = c->next) {
+      for (d = c->firstd; d; d = d->next) {
+        if (d->quota > 0 && (d->input.head || d->output.head)) {
+          allow_over = 0; break;
+        }
       }
     }
   }
@@ -335,7 +334,7 @@ void process_commands()
 
       for (d = c->firstd; d; d = dnext)
       { dnext = d->next;
-        if (t = d->input.head)
+        if ((t = d->input.head) != 0)
         { if (d->quota > 0 || allow_over)
           { if (d->quota > 0 && --d->quota > 0) underquota++;
 
@@ -439,7 +438,7 @@ void dump_users(struct descriptor_data * e, char *user)
               sprintf(buf, "%s  %s", buf, d->hostname);
           } else
           {
-            sprintf(buf, "%s idle %d seconds",
+            sprintf(buf, "%s idle %ld seconds",
                     db[d->player].name, now - d->last_time);
             if (wizard)
               sprintf(buf, "%s from host %s", buf, d->hostname);
@@ -472,7 +471,7 @@ void dump_users(struct descriptor_data * e, char *user)
 #endif
           }
           else
-          { sprintf (flagbuf, ""); }
+          { flagbuf[0] = '\0'; }
 
           if (tabular)
           {
@@ -485,7 +484,7 @@ void dump_users(struct descriptor_data * e, char *user)
               sprintf(buf, "%s  %s%s", buf, flagbuf, d->hostname);
           } else
           {
-            sprintf(buf, "%s idle %d seconds",
+            sprintf(buf, "%s idle %ld seconds",
                     db[d->player].name, now - d->last_time);
             if (wizard)
               sprintf(buf, "%s %sfrom host %s", buf, flagbuf, d->hostname);
@@ -516,7 +515,7 @@ void free_text_block(struct text_block * t)
   FREE((char *)t);
 }
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
   int             pid;
 
@@ -554,14 +553,14 @@ void main(int argc, char **argv)
     sprintf(pstr, "%d", port);
     sprintf(istr, "%d", intport);
     sprintf(clvl, "%d", 1);
-    execl("concentrate", "conc", pstr, istr, clvl, 0);
+    execl("concentrate", "conc", pstr, istr, clvl, (char *)0);
   }
   set_signals();
-  start_port(port);
+  start_port();
   main_loop();
   close_sockets();
   dump_database();
-  exit(0);
+  return 0;
 }
 
 void start_log()
@@ -1005,9 +1004,7 @@ void parse_connect(const char *msg, char *command, char *user, char *pass)
 
 void close_sockets(void)
 {
-  struct descriptor_data *d, *dnext;
   struct conc_list *c;
-  char            header[4];
 
   for (c = firstc; c; c = c->next)
   {
@@ -1156,15 +1153,14 @@ void file_date(struct descriptor_data * d, const char *file)
 void main_loop()
 {
   struct message *ptr;
-  int             newsock, lastsock, len, loop;
+  int             newsock, lastsock;
+  unsigned int    len;
   int             accepting;
   struct sockaddr_in sin;
   fd_set          in, out;
-  char            data[1025], *p1, *p2, buffer[1025], header[4];
   struct conc_list *c, *tempc, *nextc, *lastc;
-  struct descriptor_data *d, *tempd, *nextd;
+  struct descriptor_data *d, *tempd;
   struct timeval  last_slice, current_time;
-  struct timeval  next_slice;
   struct timeval  timeout, slice_timeout, poll_timeout;
   short           templen;
 
@@ -1262,12 +1258,11 @@ void main_loop()
 #endif
       if ((FD_ISSET(c->sock, &in)) && (c->ilen < BUFSIZE))
       {
-        int             i;
         len = recv(c->sock, c->incoming + c->ilen,
                    BUFSIZE - c->ilen, 0);
         if (len == 0)
         {
-          struct message *mptr, *tempm;
+          struct message *mptr;
           writelog("CONCENTRATOR DISCONNECT: %d\n", c->sock);
           close(c->sock);
           d = c->firstd;
@@ -1287,17 +1282,12 @@ void main_loop()
           mptr = c->first;
           while (mptr)
           {
-            tempm = mptr;
             mptr = mptr->next;
             FREE(mptr->data);
             FREE(mptr);
           }
           FREE(c);
           break;
-        } else
-        if (len < 0)
-        {
-          writelog("recv: %s\n", strerror(errno));
         } else
         {
           int             num;
@@ -1523,7 +1513,6 @@ int do_connect_msg(struct descriptor_data * d, const char *filename)
 {
   FILE           *f;
   char            buf[BUFFER_LEN];
-  char           *p;
 
   if ((f = fopen(filename, "r")) == NULL)
   {
@@ -1552,7 +1541,7 @@ void do_tune (dbref player, const char *varname, const char *valstr)
   }
 
   if (!varname || !*varname  || !valstr || !*valstr)
-  { sprintf (buf, "Current server settings:\n  slice %d ms, burst %d cmds\n  timeout %d ms, poll %d ms, extra %s",
+  { sprintf (buf, "Current server settings:\n  slice %ld ms, burst %ld cmds\n  timeout %ld ms, poll %ld ms, extra %s",
              slice_msecs, burst_quota, timeout_msecs, poll_msecs,
              allow_extra ? "yes" : "no");
     notify (player, buf);
@@ -1579,19 +1568,19 @@ void do_tune (dbref player, const char *varname, const char *valstr)
 
   if (!strncmp (varname, "slice", vnlen))
   { slice_msecs = value;
-    sprintf (buf, "Time slice set to %d ms.", slice_msecs);
+    sprintf (buf, "Time slice set to %ld ms.", slice_msecs);
   }
   else if (!strncmp (varname, "burst", vnlen))
   { burst_quota = value;
-    sprintf (buf, "Maximum burst size set to %d cmds.", burst_quota);
+    sprintf (buf, "Maximum burst size set to %ld cmds.", burst_quota);
   }
   else if (!strncmp (varname, "timeout", vnlen))
   { timeout_msecs = value;
-    sprintf (buf, "Timeout for select call set to %d ms.", timeout_msecs);
+    sprintf (buf, "Timeout for select call set to %ld ms.", timeout_msecs);
   }
   else if (!strncmp (varname, "poll", vnlen))
   { poll_msecs = value;
-    sprintf (buf, "Timeout for select poll set to %d ms.", poll_msecs);
+    sprintf (buf, "Timeout for select poll set to %ld ms.", poll_msecs);
   }
   else
   { strcpy (buf, "Variables are: slice, burst, timeout, poll, extra"); }

@@ -362,7 +362,6 @@ int reach_lvl = 0;
 
 void make_reachable(dbref x)
 {   dbref e, r;
-    int i;
 
     if (Typeof(x) != TYPE_ROOM || is_excluded(x)) return;
 
@@ -387,7 +386,7 @@ void make_reachable(dbref x)
     reach_lvl--;
 }
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     dbref i;
     int top_in;
@@ -411,7 +410,7 @@ void main(int argc, char **argv)
     /* now parse args */
     arg0 = *argv;
     for (argv++, argc--; argc > 0; argv++, argc--) {
-        if (isdigit (**argv) || **argv == '-' && isdigit ((*argv)[1])) {
+        if (isdigit (**argv) || (**argv == '-' && isdigit ((*argv)[1]))) {
             i = atol(*argv);
         } else if (**argv == '+' && isdigit ((*argv)[1])) {
             i = atol(*argv+1);
@@ -504,7 +503,7 @@ void main(int argc, char **argv)
 
     do_write();
 
-    exit(0);
+    return 0;
 }
 
 # define MINUTES (60)
@@ -523,7 +522,7 @@ long atosec (const char *str)
 
     num = atol (str);
 
-    for (s=str; *s && isspace (*s) || isdigit (*s); s++) ;
+    for (s=str; *s && (isspace (*s) || isdigit (*s)); s++) ;
 
     switch (*s) {
       case '\0':

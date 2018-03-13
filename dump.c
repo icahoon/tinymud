@@ -25,7 +25,7 @@ int controls(dbref who, dbref what)
     return 1;
 }
 
-void main(int argc, char **argv)
+int main(int argc, char **argv)
 {
     struct object *o;
     dbref owner;
@@ -54,7 +54,7 @@ void main(int argc, char **argv)
         /* don't show it if it isn't owned by the right player */
         if(owner != NOTHING && o->owner != owner) continue;
 
-        printf("#%d: %s [%s] at %s Pennies: %d Type: ",
+        printf("#%ld: %s [%s] at %s Pennies: %d Type: ",
                o - db, o->name, db[o->owner].name,
                unparse_object(owner, o->location),
                o->pennies);
@@ -144,5 +144,5 @@ void main(int argc, char **argv)
         putchar('\n');
     }
 
-    exit(0);
+    return 0;
 }

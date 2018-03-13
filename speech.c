@@ -50,7 +50,6 @@ void do_whisper(dbref player, const char *arg1, const char *arg2)
     dbref who;
     char buf[BUFFER_LEN];
     char *det;
-    int result;
 
     init_match(player, arg1, TYPE_PLAYER);
     match_neighbor();
