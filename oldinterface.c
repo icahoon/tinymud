@@ -100,10 +100,10 @@ char *time_format_1(long);
 char *time_format_2(long);
 
 /* Signal handlers */
-int bailout (int, int, struct sigcontext *);
-int sigshutdown (int, int, struct sigcontext *);
+int bailout (int, int, sig_t);
+int sigshutdown (int, int, sig_t);
 #ifdef DETACH
-int logsynch (int, int, struct sigcontext *);
+int logsynch (int, int, sig_t);
 #endif /* DETACH */
 
 char *logfile = LOG_FILE;
@@ -893,21 +893,21 @@ void boot_off(dbref player)
     }
 }
 
-int bailout (int sig, int code, struct sigcontext *scp)
+int bailout (int sig, int code, sig_t scp)
 {
     long *ptr;
     int i;
 
     writelog("BAILOUT: caught signal %d code %d\n", sig, code);
     ptr = (long *) scp;
-    for (i=0; i<sizeof(struct sigcontext); i++)
+    for (i=0; i<sizeof(sig_t); i++)
         writelog("  %08lx\n", *ptr);
     panic("PANIC on spurious signal");
     _exit(7);
     return 0;
 }
 
-int sigshutdown (int sig, int code, struct sigcontext *scp)
+int sigshutdown (int sig, int code, sig_t scp)
 {
     writelog("SHUTDOWN: on signal %d code %d\n", sig, code);
     shutdown_flag = 1;
@@ -915,7 +915,7 @@ int sigshutdown (int sig, int code, struct sigcontext *scp)
 }
 
 #ifdef DETACH
-int logsynch (int sig, int code, struct sigcontext *scp)
+int logsynch (int sig, int code, sig_t scp)
 {
     freopen(logfile, "a", stderr);
     setbuf(stderr, NULL);
