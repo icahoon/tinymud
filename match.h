@@ -42,5 +42,5 @@ extern dbref last_match_result(void); /* returns last result */
 #define AMBIGUOUS_MESSAGE "I don't know which one you mean!"
 
 extern dbref noisy_match_result(void); /* wrapper for match_result */
-                                /* noisily notifies player */
-                                /* returns matched object or NOTHING */
+/* noisily notifies player */
+/* returns matched object or NOTHING */

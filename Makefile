@@ -59,140 +59,55 @@ OPTIM=-g -Wall -Werror
 # To disable core dump on errors, include -DNODUMPCORE
 # To add the ROBOT flag (allowing robots to be excluded from some rooms
 #   at each player's request), include -DROBOT_MODE
-# To use Tinker instead of Wizard, Bobble instead of Toad, and
-#    donate instead of sacrifice, include -DTINKER
 # To prevent users from using confusing names
 #   (currently A, An, The, You, Your, Going, Huh?), include -DNOFAKES
 # To include code for marking all things with a timestamp/usecnt,
 #   include -DTIMESTAMPS
 #
-# To Use Islandia values in config.h, include -DISLANDIA
-# To Use TinyHELL values in config.h, include -DTINYHELL
 
-#DEFS= -DGOD_PRIV -DCOMPRESS -DQUIET_WHISPER -DGENDER -DHOST_NAME \
-#      -DCONNECT_MESSAGES -DPLAYER_LIST -DDETACH -DREGISTRATION \
-#      -DGOD_ONLY_PCREATE -DROBOT_MODE -DRECYCLE -DNOFAKES \
-#      -DTINYHELL
+DEFS = -DGOD_PRIV -DCOMPRESS -DQUIET_WHISPER -DGENDER -DHOST_NAME \
+       -DCONNECT_MESSAGES -DPLAYER_LIST -DDETACH -DROBOT_MODE \
+       -DRECYCLE -DNOFAKES -DTIMESTAMPS
 
-DEFS= -DGOD_PRIV -DCOMPRESS -DQUIET_WHISPER -DGENDER -DHOST_NAME \
-      -DCONNECT_MESSAGES -DPLAYER_LIST -DDETACH -DROBOT_MODE \
-      -DRECYCLE -DTINKER -DNOFAKES -DTIMESTAMPS -DISLANDIA
-
-CFLAGS= $(OPTIM) $(DEFS)
+CFLAGS = $(OPTIM) $(DEFS)
 
 # Everything needed to use db.c
-DBFILES= db.c compress.c player_list.c stringutil.c
-DBOFILES= db.o compress.o player_list.o stringutil.o
+DBFILES = db.c compress.c player_list.c stringutil.c
+DBOFILES = db.o compress.o player_list.o stringutil.o
 
-# Everything except interface.c --- allows for multiple interfaces
-CFILES= create.c game.c help.c look.c match.c move.c player.c predicates.c \
+CFILES = create.c game.c help.c look.c match.c move.c player.c predicates.c \
 	rob.c set.c speech.c utils.c wiz.c game.c \
-	boolexp.c unparse.c conc.c oldinterface.c $(DBFILES)
+	boolexp.c unparse.c main.c $(DBFILES)
 
-# .o versions of above
-OFILES= create.o game.o help.o look.o match.o move.o player.o predicates.o \
+OFILES = create.o game.o help.o look.o match.o move.o player.o predicates.o \
 	rob.o set.o speech.o utils.o wiz.o boolexp.o \
 	unparse.o $(DBOFILES)
 
-# Files in the standard distribution
-DISTFILES= $(CFILES) config.h db.h externs.h interface.h match.h \
-	interface.c sanity-check.c extract.c dump.c decompress.c \
-	help.txt small.db minimal.db restart-cmu do_gripes \
-	restart-day restart-night \
- 	README small.db.README \
-	CHANGES Makefile copyright.h
+OUTFILES = tinymud
 
-OUTFILES= netmud netmud.conc concentrate dump paths sanity-check \
-	  extract decompress TAGS conc
+all: tinymud
 
-BINDIR= /clients/Islandia/bin
-LIBDIR= /clients/Islandia/lib
-
-BINS= $(BINDIR)/netmud.conc $(BINDIR)/extract $(BINDIR)/sanity-check \
-      $(BINDIR)/dump $(BINDIR)/decompress $(BINDIR)/concentrate \
-      $(BINDIR)/netmud
-
-# paths is likely to remain broken
-all: extract sanity-check dump decompress netmud netmud.conc concentrate
-
-TAGS: *.c *.h
-	etags *.c *.h
-
-netmud.conc: $P interface.o $(OFILES)
-	$(CC) $(CFLAGS) -o netmud.conc interface.o $(OFILES)
-
-netmud: $P oldinterface.o $(OFILES)
-	$(CC) $(CFLAGS) -o netmud oldinterface.o $(OFILES)
-
-concentrate: $P conc.c config.h
-	$(CC) $(CFLAGS) -o concentrate conc.c
-
-dump: $P dump.o unparse.o $(DBOFILES)
-	-rm -f dump
-	$(CC) $(CFLAGS) -o dump dump.o unparse.o $(DBOFILES) 
-
-sanity-check: $P sanity-check.o utils.o $(DBOFILES) 
-	-rm -f sanity-check
-	$(CC) $(CFLAGS) -o sanity-check sanity-check.o utils.o $(DBOFILES)
-
-extract: $P extract.o utils.o $(DBOFILES) 
-	-rm -f extract
-	$(CC) $(CFLAGS) -o extract extract.o utils.o $(DBOFILES)
-
-paths: $P paths.o unparse.o $(DBOFILES)
-	-rm -f paths
-	$(CC) $(CFLAGS) -o paths paths.o unparse.o $(DBOFILES)
-
-decompress: $P decompress.o compress.o
-	-rm -f decompress
-	$(CC) $(CFLAGS) -o decompress decompress.o compress.o
+tinymud: main.o $(OFILES)
+	$(CC) $(CFLAGS) -o tinymud main.o $(OFILES)
 
 clean:
 	-rm -f *.o a.out core gmon.out $(OUTFILES)
-
-dist.tar.Z: $(DISTFILES)
-	tar cvf - $(DISTFILES) | compress -c > dist.tar.Z.NEW
-	mv dist.tar.Z.NEW dist.tar.Z
-
-install: $(BINS)
-
-$(BINDIR)/extract: extract
-	cp extract $(BINDIR)/extract
-$(BINDIR)/sanity-check: sanity-check
-	cp sanity-check $(BINDIR)/sanity-check
-$(BINDIR)/concentrate: concentrate
-	cp concentrate $(BINDIR)/concentrate
-$(BINDIR)/netmud.conc: netmud.conc
-	cp netmud.conc $(BINDIR)/netmud.conc
-$(BINDIR)/netmud: netmud
-	cp netmud $(BINDIR)/netmud
-$(BINDIR)/dump: dump
-	cp dump $(BINDIR)/dump
-$(BINDIR)/decompress: decompress
-	cp decompress $(BINDIR)/decompress
 
 # DO NOT REMOVE THIS LINE OR CHANGE ANYTHING AFTER IT #
 boolexp.o: boolexp.c copyright.h db.h match.h externs.h config.h interface.h
 compress.o: compress.c
 create.o: create.c copyright.h db.h config.h interface.h externs.h
 db.o: db.c copyright.h db.h config.h
-decompress.o: decompress.c
-dump.o: dump.c copyright.h db.h
-extract.o: extract.c copyright.h db.h
-fix.o: fix.c copyright.h db.h config.h
 game.o: game.c copyright.h db.h config.h interface.h match.h externs.h
 help.o: help.c copyright.h db.h config.h interface.h externs.h
-interface.o: interface.c copyright.h db.h interface.h config.h
 look.o: look.c copyright.h db.h config.h interface.h match.h externs.h
+main.o: main.c copyright.h db.h interface.h config.h
 match.o: match.c copyright.h db.h config.h match.h
 move.o: move.c copyright.h db.h config.h interface.h match.h externs.h
-oldinterface.o: oldinterface.c copyright.h db.h interface.h config.h
-paths.o: paths.c copyright.h db.h config.h
 player.o: player.c copyright.h db.h config.h interface.h externs.h
 player_list.o: player_list.c copyright.h db.h config.h interface.h externs.h
 predicates.o: predicates.c copyright.h db.h interface.h config.h externs.h
 rob.o: rob.c copyright.h db.h config.h interface.h match.h externs.h
-sanity-check.o: sanity-check.c copyright.h db.h config.h
 set.o: set.c copyright.h db.h config.h match.h interface.h externs.h
 speech.o: speech.c copyright.h db.h interface.h match.h config.h externs.h
 stringutil.o: stringutil.c copyright.h externs.h
