@@ -92,6 +92,7 @@ tinymud: main.o $(OFILES)
 
 clean:
 	-rm -f *.o a.out core gmon.out $(OUTFILES)
+	-rm -rf *.dSYM
 
 # DO NOT REMOVE THIS LINE OR CHANGE ANYTHING AFTER IT #
 boolexp.o: boolexp.c copyright.h db.h match.h externs.h config.h interface.h
@@ -111,6 +112,7 @@ rob.o: rob.c copyright.h db.h config.h interface.h match.h externs.h
 set.o: set.c copyright.h db.h config.h match.h interface.h externs.h
 speech.o: speech.c copyright.h db.h interface.h match.h config.h externs.h
 stringutil.o: stringutil.c copyright.h externs.h
+text.o: text.c mem.h text.h
 unparse.o: unparse.c db.h externs.h config.h interface.h
 utils.o: utils.c copyright.h db.h
 wiz.o: wiz.c copyright.h db.h interface.h match.h externs.h
