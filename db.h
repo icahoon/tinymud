@@ -88,10 +88,10 @@ typedef char boolexp_type;
 #define BOOLEXP_CONST 3
 
 struct boolexp {
-  boolexp_type type;
-  struct boolexp *sub1;
-  struct boolexp *sub2;
-  dbref thing;
+	boolexp_type type;
+	struct boolexp *sub1;
+	struct boolexp *sub2;
+	dbref thing;
 };
 
 #define TRUE_BOOLEXP ((struct boolexp *) 0)
@@ -102,35 +102,35 @@ struct boolexp {
 #define HOME (-3)                /* virtual room, represents mover's home */
 
 struct object {
-    const char *name;
-    const char *description;
-    dbref location;                /* pointer to container */
-                                /* for exits, pointer to destination */
-    dbref contents;                /* pointer to first item */
-    dbref exits;                /* pointer to first exit for rooms */
-                                    /* pointer to home for things and players */
-    dbref next;                        /* pointer to next in contents/exits chain */
+	const char *name;
+	const char *description;
+	dbref location;                /* pointer to container */
+	/* for exits, pointer to destination */
+	dbref contents;                /* pointer to first item */
+	dbref exits;                /* pointer to first exit for rooms */
+	/* pointer to home for things and players */
+	dbref next;                        /* pointer to next in contents/exits chain */
 
-    /* the following are used for pickups for things, entry for exits */
-    struct boolexp *key;        /* if not NOTHING, must have this to do op */
-    const char *fail_message;                /* what you see if op fails */
-    const char *succ_message;                /* what you see if op succeeds */
-    /* other messages get your name prepended, so if your name is "Foo", */
-    /* and osuccess = "disappears in a blast of gamma radiation." */
-    /* then others see "Foo disappears in a blast of gamma radiation." */
-    /* (At some point I may put in Maven-style %-substitutions.) */
-    const char *ofail;                /* what others see if op fails */
-    const char *osuccess;        /* what others see if op succeeds */
+	/* the following are used for pickups for things, entry for exits */
+	struct boolexp *key;        /* if not NOTHING, must have this to do op */
+	const char *fail_message;                /* what you see if op fails */
+	const char *succ_message;                /* what you see if op succeeds */
+	/* other messages get your name prepended, so if your name is "Foo", */
+	/* and osuccess = "disappears in a blast of gamma radiation." */
+	/* then others see "Foo disappears in a blast of gamma radiation." */
+	/* (At some point I may put in Maven-style %-substitutions.) */
+	const char *ofail;                /* what others see if op fails */
+	const char *osuccess;        /* what others see if op succeeds */
 
-    dbref owner;                /* who controls this object */
-    int pennies;                /* number of pennies object contains */
-    object_flag_type flags;
-    const char *password;        /* password for players */
+	dbref owner;                /* who controls this object */
+	int pennies;                /* number of pennies object contains */
+	object_flag_type flags;
+	const char *password;        /* password for players */
 #ifdef TIMESTAMPS
-    /* Timestamp mod, Sep 1, 1990 by Fuzzy */
-    long created;                /* Time of creation */
-    long lastused;                /* Time last used/entered */
-    long usecnt;                /* Times used/entered */
+	/* Timestamp mod, Sep 1, 1990 by Fuzzy */
+	long created;                /* Time of creation */
+	long lastused;                /* Time last used/entered */
+	long usecnt;                /* Times used/entered */
 #endif
 };
 
@@ -141,9 +141,9 @@ extern const char *alloc_string(const char *s);
 
 extern dbref new_object();        /* return a new object */
 
-extern dbref getref (FILE *);   /* Read a database reference from a file. */
+extern dbref getref(FILE *);    /* Read a database reference from a file. */
 
-extern void putref (FILE *, dbref); /* Write one ref to the file */
+extern void putref(FILE *, dbref);  /* Write one ref to the file */
 
 extern struct boolexp *getboolexp(FILE *); /* get a boolexp */
 extern void putboolexp(FILE *, struct boolexp *); /* put a boolexp */
@@ -153,7 +153,7 @@ extern int db_write_object(FILE *, dbref); /* write one object to file */
 extern dbref db_write(FILE *f);        /* write db to file, return # of objects */
 
 extern dbref db_read(FILE *f);        /* read db from file, return # of objects */
-                                /* Warning: destroys existing db contents! */
+/* Warning: destroys existing db contents! */
 
 extern void free_boolexp(struct boolexp *);
 extern void db_free(void);
