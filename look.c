@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 /* commands which look at things */
 
 #include <time.h>

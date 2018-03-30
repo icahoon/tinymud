@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 #ifndef __DB_H
 #define __DB_H
 #include <stdio.h>

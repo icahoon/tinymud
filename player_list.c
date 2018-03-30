@@ -1,7 +1,5 @@
 #ifdef PLAYER_LIST
 
-#include "copyright.h"
-
 #include <stdlib.h>
 #include <ctype.h>
 

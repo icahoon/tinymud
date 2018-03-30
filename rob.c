@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 /* rob and kill */
 
 #include <stdlib.h>

@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 /* commands for giving help */
 
 #include "db.h"

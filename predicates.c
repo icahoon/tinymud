@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 /* Predicates for testing various conditions */
 
 #include <string.h>

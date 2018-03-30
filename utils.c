@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 #include "db.h"
 
 /* remove the first occurence of what in list headed by first */

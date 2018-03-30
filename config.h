@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 /* room number of player start location */
 #define PLAYER_START ((dbref)0)
 

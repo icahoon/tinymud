@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 /* commands which set parameters */
 #include <stdio.h>
 #include <string.h>

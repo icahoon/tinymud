@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 /* String utilities */
 
 #include <ctype.h>

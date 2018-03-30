@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 #include "db.h"
 
 /* match functions */

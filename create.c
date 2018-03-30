@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 /* Commands that create new objects */
 
 #include "db.h"

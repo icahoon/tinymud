@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 #ifndef TINYMUD_MEM_H
 #define TINYMUD_MEM_H
 
