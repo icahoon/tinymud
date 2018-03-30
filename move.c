@@ -9,8 +9,6 @@
 #include "match.h"
 #include "externs.h"
 
-extern long int random(void);
-
 void moveto(dbref what, dbref where) {
 	dbref loc;
 

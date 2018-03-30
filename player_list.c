@@ -10,8 +10,6 @@
 #include "interface.h"
 #include "externs.h"
 
-extern long int random(void);
-
 #define PLAYER_LIST_SIZE (1 << 12) /* must be a power of 2 */
 
 static dbref hash_function_table[256];

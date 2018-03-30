@@ -9,8 +9,6 @@
 #include "match.h"
 #include "externs.h"
 
-extern long int random(void);
-
 #define DOWNCASE(x) (isupper(x) ? tolower(x) : (x))
 
 static dbref exact_match = NOTHING;        /* holds result of exact match */
