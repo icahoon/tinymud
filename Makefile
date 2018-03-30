@@ -75,5 +75,4 @@ extra_cflags := -DGOD_PRIV -DCOMPRESS -DQUIET_WHISPER -DGENDER -DHOST_NAME \
                 -DCONNECT_MESSAGES -DPLAYER_LIST -DDETACH -DROBOT_MODE \
                 -DRECYCLE -DNOFAKES -DTIMESTAMPS
 
-
 include $(root)/build/build.mk
