@@ -61,8 +61,6 @@ cc   := clang
 #   include -DPLAYER_LIST.
 # To disable login-time creation of players, include -DREGISTRATION.
 #    see GOD_ONLY_PCREATE above.
-# To cause netmud to detach itself from the terminal on startup, include
-#   -DDETACH.  The log file appears on LOG_FILE, set in config.h.
 # To add the @count & @recycle command, include -DRECYCLE
 # To disable core dump on errors, include -DNODUMPCORE
 # To add the ROBOT flag (allowing robots to be excluded from some rooms
@@ -72,7 +70,7 @@ cc   := clang
 # To include code for marking all things with a timestamp/usecnt,
 #   include -DTIMESTAMPS
 extra_cflags := -DGOD_PRIV -DCOMPRESS -DQUIET_WHISPER -DGENDER -DHOST_NAME \
-                -DCONNECT_MESSAGES -DPLAYER_LIST -DDETACH -DROBOT_MODE \
+                -DCONNECT_MESSAGES -DPLAYER_LIST -DROBOT_MODE \
                 -DRECYCLE -DNOFAKES -DTIMESTAMPS
 
 include $(root)/build/build.mk

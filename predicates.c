@@ -3,6 +3,7 @@
 /* Predicates for testing various conditions */
 
 #include <string.h>
+#include <strings.h>
 #include <ctype.h>
 
 #include "db.h"
