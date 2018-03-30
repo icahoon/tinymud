@@ -126,7 +126,6 @@ extern void init_compress(void);
 
 /* From interface.c */
 struct descriptor_data;
-extern int do_connect_msg(struct descriptor_data *, const char *);
 extern void boot_off(dbref player);
 extern int notify(dbref player2, const char *msg);
 
