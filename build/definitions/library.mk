@@ -39,3 +39,5 @@ endif
 
 library := $(_lib_)/$(library_prefix)$(lib_name).$(library_suffix)
 variables += library
+
+# vim:ts=8 noexpandtab

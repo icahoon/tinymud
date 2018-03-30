@@ -112,3 +112,5 @@ endif
 # Include the dependencies
 #
 -include $(_obj_)/*.d
+
+# vim:ts=8 noexpandtab

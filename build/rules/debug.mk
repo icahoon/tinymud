@@ -39,3 +39,5 @@ debug::
 	    printf "  %b%-20s%b\t%s\n" \
 		   "$(dbg_hilite)" "$${name}" "$(clear)" "$${value}"; \
 	done
+
+# vim:ts=8 noexpandtab

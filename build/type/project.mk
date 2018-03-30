@@ -65,12 +65,10 @@ $(rules)::
 	$(MAKE) make_target=$(@) all
 
 clean::
-	@printf "$(nl)$(rm_hilite)Cleaning up $(common_inc_dir)$(clear)\n"
-	$(q)if [ "$(common_inc_dir)" != "$(src_dir)" ]; then rm -rf $(common_inc_dir)/*; fi
-	@printf "$(nl)$(rm_hilite)Cleaning up $(common_lib_dir)$(clear)\n"
-	$(q)rm -rf $(common_lib_dir)/*
-	@printf "$(nl)$(rm_hilite)Cleaning up $(common_bin_dir)$(clear)\n"
-	$(q)rm -rf $(common_bin_dir)/*
+	@printf "$(nl)$(rm_hilite)Cleaning up $(_lib_)$(clear)\n"
+	$(q)rm -rf $(_lib_)/*
+	@printf "$(nl)$(rm_hilite)Cleaning up $(_bin_)$(clear)\n"
+	$(q)rm -rf $(_bin_)/*
 
 
 variables += targets

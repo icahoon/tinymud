@@ -121,3 +121,5 @@ rules := clean test
 all_rules := all $(rules)
 
 .PHONY:: $(all_rules) info debug
+
+# vim:ts=8 noexpandtab

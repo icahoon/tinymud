@@ -41,3 +41,4 @@ binary_debug := $(_bin_)/$(name).debug
 
 variables += binary binary_debug
 
+# vim:ts=8 noexpandtab

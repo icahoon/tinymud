@@ -50,3 +50,5 @@ test:
 
 include $(_build_)/rules/c_src.mk
 include $(_build_)/rules/binary.mk
+
+# vim:ts=8 noexpandtab

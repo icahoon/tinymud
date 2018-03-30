@@ -25,19 +25,19 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
-__static_lib_mk__ := 1
+__shared_lib_mk__ := 1
 
 #------------------------------------------------------------------------
 # Prerequisites
 
 ifndef __build_mk__
-    $(error static_lib.mk must be included by build.mk)
+    $(error shared_lib.mk must be included by build.mk)
 endif
 
 #------------------------------------------------------------------------
 # Definitions
 
-__static_library__ := 1
+__shared_library__ := 1
 
 include $(_build_)/definitions/c_src.mk
 include $(_build_)/definitions/library.mk

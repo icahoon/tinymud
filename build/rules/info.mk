@@ -41,3 +41,5 @@ info help::
 	  printf "  %-10s\t%s\n" "$$i" "$$desc"; \
 	done
 	@echo
+
+# vim:ts=8 noexpandtab

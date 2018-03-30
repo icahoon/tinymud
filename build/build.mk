@@ -40,3 +40,5 @@ include $(_build_)/common.mk
 include $(_build_)/type/$(type).mk
 include $(_build_)/rules/debug.mk
 include $(_build_)/rules/info.mk
+
+# vim:ts=8 noexpandtab

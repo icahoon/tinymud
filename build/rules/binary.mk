@@ -43,3 +43,5 @@ bin_clean:
 ifneq ($(debug_symbols), no)
 	$(q)rm -f $(binary_debug)
 endif
+
+# vim:ts=8 noexpandtab

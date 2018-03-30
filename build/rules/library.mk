@@ -36,5 +36,4 @@ lib_clean:
 	@printf "$(nl)$(rm_hilite)Cleaning up $(library)$(clear)\n"
 	$(q)rm -f $(library)
 
-
-
+# vim:ts=8 noexpandtab
