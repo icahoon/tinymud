@@ -8,6 +8,7 @@
 #include "config.h"
 #include "interface.h"
 #include "match.h"
+#include "log.h"
 #include "externs.h"
 
 void do_teleport(dbref player, const char *arg1, const char *arg2) {

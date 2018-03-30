@@ -6,6 +6,7 @@
 #include "interface.h"
 #include "match.h"
 #include "config.h"
+#include "log.h"
 #include "externs.h"
 
 /* this function is a kludge for regenerating messages split by '=' */

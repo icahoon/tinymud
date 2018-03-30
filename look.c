@@ -7,6 +7,7 @@
 #include "config.h"
 #include "interface.h"
 #include "match.h"
+#include "log.h"
 #include "externs.h"
 
 static void look_contents(dbref player, dbref loc, const char *contents_name) {

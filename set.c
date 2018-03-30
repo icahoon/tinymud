@@ -7,6 +7,7 @@
 #include "config.h"
 #include "match.h"
 #include "interface.h"
+#include "log.h"
 #include "externs.h"
 
 #define FREE_STRING(X) X = ((X) ? (free ((void *) (X)), NULL) : NULL)

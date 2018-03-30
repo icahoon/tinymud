@@ -3,6 +3,7 @@
 #include "db.h"
 #include "config.h"
 #include "interface.h"
+#include "log.h"
 #include "externs.h"
 
 /* utility for open and link */
