@@ -23,6 +23,9 @@
 #include "interface.h"
 #include "config.h"
 
+#include "mem.h"
+#include "text.h"
+
 extern int        errno;
 int        shutdown_flag = 0;
 
@@ -30,20 +33,7 @@ static const char *connect_fail = "Either that player does not exist, or has a d
 #ifndef REGISTRATION
 static const char *create_fail = "Either there is already a player with that name, or that name is illegal.\n";
 #endif /* REGISTRATION */
-static const char *flushed_message = "<Output Flushed>\n";
 static const char *shutdown_message = "Going down - Bye\n";
-
-struct text_block {
-	int                        nchars;
-	struct text_block        *nxt;
-	char                        *start;
-	char                        *buf;
-};
-
-struct text_queue {
-	struct text_block *head;
-	struct text_block **tail;
-};
 
 struct descriptor_data {
 	int descriptor;
@@ -107,13 +97,6 @@ int logsynch(int, int, sig_t);
 #endif /* DETACH */
 
 char *logfile = LOG_FILE;
-
-#define MALLOC(result, type, number) do { \
-        if (!((result) = (type *) malloc ((number) * sizeof (type)))) \
-                panic("Out of memory"); \
-        } while (0)
-
-#define FREE(x) (free((void *) x))
 
 int main(int argc, char **argv) {
 	if (argc < 3) {
@@ -480,58 +463,6 @@ int make_socket(int port) {
 	return s;
 }
 
-struct text_block *make_text_block(const char *s, int n) {
-	struct text_block *p;
-
-	MALLOC(p, struct text_block, 1);
-	MALLOC(p->buf, char, n);
-	bcopy(s, p->buf, n);
-	p->nchars = n;
-	p->start = p->buf;
-	p->nxt = 0;
-	return p;
-}
-
-void free_text_block(struct text_block *t) {
-	FREE(t->buf);
-	FREE((char *) t);
-}
-
-void add_to_queue(struct text_queue *q, const char *b, int n) {
-	struct text_block *p;
-
-	if (n == 0) {
-		return;
-	}
-
-	p = make_text_block(b, n);
-	p->nxt = 0;
-	*q->tail = p;
-	q->tail = &p->nxt;
-}
-
-int flush_queue(struct text_queue *q, int n) {
-	struct text_block *p;
-	int really_flushed = 0;
-
-	n += strlen(flushed_message);
-
-	while (n > 0 && (p = q->head)) {
-		n -= p->nchars;
-		really_flushed += p->nchars;
-		q->head = p->nxt;
-		free_text_block(p);
-	}
-	p = make_text_block(flushed_message, strlen(flushed_message));
-	p->nxt = q->head;
-	q->head = p;
-	if (!p->nxt) {
-		q->tail = &p->nxt;
-	}
-	really_flushed -= p->nchars;
-	return really_flushed;
-}
-
 int queue_write(struct descriptor_data *d, const char *b, int n) {
 	int space;
 
@@ -562,10 +493,10 @@ int process_output(struct descriptor_data *d) {
 		}
 		d->output_size -= cnt;
 		if (cnt == cur -> nchars) {
-			if (!cur -> nxt) {
+			if (!cur -> next) {
 				d->output.tail = qp;
 			}
-			*qp = cur -> nxt;
+			*qp = cur -> next;
 			free_text_block(cur);
 			continue;                /* do not adv ptr */
 		}
@@ -588,7 +519,7 @@ void freeqs(struct descriptor_data *d) {
 
 	cur = d->output.head;
 	while (cur) {
-		next = cur -> nxt;
+		next = cur -> next;
 		free_text_block(cur);
 		cur = next;
 	}
@@ -597,7 +528,7 @@ void freeqs(struct descriptor_data *d) {
 
 	cur = d->input.head;
 	while (cur) {
-		next = cur -> nxt;
+		next = cur -> next;
 		free_text_block(cur);
 		cur = next;
 	}
@@ -701,7 +632,7 @@ void process_commands(void) {
 				if (!do_command(d, t -> start)) {
 					shutdownsock(d);
 				} else {
-					d -> input.head = t -> nxt;
+					d -> input.head = t -> next;
 					if (!d -> input.head) {
 						d -> input.tail = &d -> input.head;
 					}
