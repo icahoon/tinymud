@@ -87,14 +87,16 @@ ar      := ar
 arflags := crsu
 
 # Linker
-ld      := $(cxx)
+ifndef ld
+	ld    := $(cc)
+endif
 ldflags := $(extra_ldflags)
 
 objcopy := objcopy
 strip   := strip
 
 # Formatter
-astyle       := astyle
+astyle       := $(shell which astyle)
 astyle_flags := --style=google --unpad-paren --indent=force-tab --break-one-line-headers --add-braces --max-code-length=132 --align-pointer=name --align-reference=name --pad-header --pad-comma --suffix=none
 
 variables += cc cxx ar arflags ld ldflags astyle astyle_flags cflags cxxflags src obj dep

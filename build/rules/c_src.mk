@@ -30,10 +30,12 @@ __rules_c_src_mk__ := 1
 
 $(_obj_)/%.o: %.c
 	@printf "$(nl)$(obj_hilite)Compiling $(subst .o,.c,$(@F))$(clear)\n"
-ifneq ($(quiet), yes)
+ifneq ($(strip $(astyle)),)
+  ifneq ($(quiet), yes)
 	$(q)$(astyle) $(astyle_flags) $< 2>&1
-else
+  else
 	$(q)$(astyle) $(astyle_flags) $< >/dev/null 2>&1
+  endif
 endif
 	$(q)$(cc) $(cflags) -c $< -o $@
 ifneq ($(build_deps), no)
@@ -43,10 +45,12 @@ endif
 
 $(_obj_)/%.o: %.cpp
 	@printf "$(nl)$(obj_hilite)Compiling $(subst .o,.cpp,$(@F))$(clear)\n"
-ifneq ($(quiet), yes)
+ifneq ($(strip $(astyle)),)
+  ifneq ($(quiet), yes)
 	$(q)$(astyle) $(astyle_flags) $< 2>&1
-else
+  else
 	$(q)$(astyle) $(astyle_flags) $< >/dev/null 2>&1
+  endif
 endif
 	$(q)$(cxx) $(cxxflags) -c $< -o $@
 ifneq ($(build_deps), no)
@@ -69,10 +73,12 @@ obj_clean:
 # Convenience rules
 %.o: %.c
 	@printf "$(nl)$(obj_hilite)Compiling $(subst .o,.c,$(@F))$(clear)\n"
-ifneq ($(quiet), yes)
+ifneq ($(strip $(astyle)),)
+  ifneq ($(quiet), yes)
 	$(q)$(astyle) $(astyle_flags) $< 2>&1
-else
+  else
 	$(q)$(astyle) $(astyle_flags) $< >/dev/null 2>&1
+  endif
 endif
 	$(q)$(cc) $(cflags) -c $< -o $(_obj_)/$@
 ifneq ($(build_deps), no)
@@ -82,10 +88,12 @@ endif
 
 %.o: %.cpp
 	@printf "$(nl)$(obj_hilite)Compiling $(subst .o,.cpp,$(@F))$(clear)\n"
-ifneq ($(quiet), yes)
+ifneq ($(strip $(astyle)),)
+  ifneq ($(quiet), yes)
 	$(q)$(astyle) $(astyle_flags) $< 2>&1
-else
+  else
 	$(q)$(astyle) $(astyle_flags) $< >/dev/null 2>&1
+  endif
 endif
 	$(q)$(cxx) $(cxxflags) -c $< -o $(_obj_)/$@
 ifneq ($(build_deps), no)
