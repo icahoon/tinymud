@@ -283,13 +283,6 @@ static const char *getstring_noalloc(FILE *f) {
 
 #define getstring(x) alloc_string(getstring_noalloc(x))
 
-#ifdef COMPRESS
-extern const char *compress(const char *);
-#define getstring_compress(x) alloc_string(compress(getstring_noalloc(x)));
-#else
-#define getstring_compress(x) getstring(x)
-#endif /* COMPRESS */
-
 static struct boolexp *negate_boolexp(struct boolexp *b) {
 	struct boolexp *n;
 
@@ -473,16 +466,16 @@ dbref db_read(FILE *f) {
 			/* read it in */
 			o = db+i;
 			o->name = getstring(f);
-			o->description = getstring_compress(f);
+			o->description = getstring(f);
 			o->location = getref(f);
 			o->contents = getref(f);
 			o->exits = getref(f);
 			o->next = getref(f);
 			o->key = getboolexp(f);
-			o->fail_message = getstring_compress(f);
-			o->succ_message = getstring_compress(f);
-			o->ofail = getstring_compress(f);
-			o->osuccess = getstring_compress(f);
+			o->fail_message = getstring(f);
+			o->succ_message = getstring(f);
+			o->ofail = getstring(f);
+			o->osuccess = getstring(f);
 			o->owner = getref(f);
 			o->pennies = getref(f);
 			o->flags = getref(f);

@@ -118,11 +118,6 @@ int main(int argc, char **argv) {
 int notify(dbref player, const char *msg) {
 	struct descriptor_data *d;
 	int retval = 0;
-#ifdef COMPRESS
-	extern const char *uncompress(const char *);
-
-	msg = uncompress(msg);
-#endif /* COMPRESS */
 
 	for (d = descriptor_list; d; d = d->next) {
 		if (d->connected && d->player == player) {
