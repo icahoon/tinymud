@@ -229,9 +229,6 @@ void pronoun_substitute(char *result, dbref player, const char *str) {
 	const static char *possessive[4] = { "", "its", "her", "his" };
 	const static char *objective[4] = { "", "it", "her", "him" };
 
-#ifdef COMPRESS
-	str = uncompress(str);
-#endif /* COMPRESS */
 	strcpy(result, db[player].name);
 	result += strlen(result);
 	*result++ = ' ';

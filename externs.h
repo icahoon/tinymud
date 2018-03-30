@@ -116,14 +116,6 @@ extern struct boolexp *parse_boolexp(dbref player, const char *string);
 extern const char *unparse_object(dbref player, dbref object);
 extern const char *unparse_boolexp(dbref player, struct boolexp *);
 
-/* From compress.c */
-#ifdef COMPRESS
-extern const char *compress(const char *);
-extern const char *uncompress(const char *);
-extern void init_compress(void);
-#endif /* COMPRESS */
-
-
 /* From interface.c */
 struct descriptor_data;
 extern void boot_off(dbref player);

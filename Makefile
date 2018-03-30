@@ -44,7 +44,6 @@ cc   := clang
 #   -DDB_INITIAL_SIZE=xxxx where xxxx is the new value (minimum 1).
 # To include code for keeping track of the number of blocks allocated,
 #   include -DTEST_MALLOC.
-# To include code which attempts to compress string data, include -DCOMPRESS.
 # To eliminate the message third parties see when a player whispers, include
 #   -DQUIET_WHISPER.
 # To include Stephen White's gender flags and pronoun substitution code, 
@@ -69,7 +68,7 @@ cc   := clang
 #   (currently A, An, The, You, Your, Going, Huh?), include -DNOFAKES
 # To include code for marking all things with a timestamp/usecnt,
 #   include -DTIMESTAMPS
-extra_cflags := -DGOD_PRIV -DCOMPRESS -DQUIET_WHISPER -DGENDER -DHOST_NAME \
+extra_cflags := -DGOD_PRIV -DQUIET_WHISPER -DGENDER -DHOST_NAME \
                 -DCONNECT_MESSAGES -DPLAYER_LIST -DROBOT_MODE \
                 -DRECYCLE -DNOFAKES -DTIMESTAMPS
 

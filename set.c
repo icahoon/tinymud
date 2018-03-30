@@ -11,12 +11,6 @@
 #include "interface.h"
 #include "externs.h"
 
-#ifdef COMPRESS
-#define alloc_compressed(x) alloc_string(compress(x))
-#else /* COMPRESS */
-#define alloc_compressed(x) alloc_string(x)
-#endif /* COMPRESS */
-
 #define FREE_STRING(X) X = ((X) ? (free ((void *) (X)), NULL) : NULL)
 
 static dbref match_controlled(dbref player, const char *name) {
@@ -114,7 +108,7 @@ void do_describe(dbref player, const char *name, const char *description) {
 		if (db[thing].description) {
 			free((void *) db[thing].description);
 		}
-		db[thing].description = alloc_compressed(description);
+		db[thing].description = alloc_string(description);
 		notify(player, "Description set.");
 	}
 }
@@ -126,7 +120,7 @@ void do_fail(dbref player, const char *name, const char *message) {
 		if (db[thing].fail_message) {
 			free((void *) db[thing].fail_message);
 		}
-		db[thing].fail_message = alloc_compressed(message);
+		db[thing].fail_message = alloc_string(message);
 		notify(player, "Message set.");
 	}
 }
@@ -138,7 +132,7 @@ void do_success(dbref player, const char *name, const char *message) {
 		if (db[thing].succ_message) {
 			free((void *) db[thing].succ_message);
 		}
-		db[thing].succ_message = alloc_compressed(message);
+		db[thing].succ_message = alloc_string(message);
 		notify(player, "Message set.");
 	}
 }
@@ -150,7 +144,7 @@ void do_osuccess(dbref player, const char *name, const char *message) {
 		if (db[thing].osuccess) {
 			free((void *) db[thing].osuccess);
 		}
-		db[thing].osuccess = alloc_compressed(message);
+		db[thing].osuccess = alloc_string(message);
 		notify(player, "Message set.");
 	}
 }
@@ -162,7 +156,7 @@ void do_ofail(dbref player, const char *name, const char *message) {
 		if (db[thing].ofail) {
 			free((void *) db[thing].ofail);
 		}
-		db[thing].ofail = alloc_compressed(message);
+		db[thing].ofail = alloc_string(message);
 		notify(player, "Message set.");
 	}
 }
