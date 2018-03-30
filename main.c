@@ -26,6 +26,8 @@
 #include "mem.h"
 #include "text.h"
 
+extern void make_nonblocking(int s); /* connection.c */
+
 extern int        errno;
 int        shutdown_flag = 0;
 
@@ -63,7 +65,6 @@ void shovechars(int port);
 void shutdownsock(struct descriptor_data *d);
 struct descriptor_data *initializesock(int s, struct sockaddr_in *a,
 									   const char *hostname);
-void make_nonblocking(int s);
 void freeqs(struct descriptor_data *d);
 void welcome_user(struct descriptor_data *d);
 void do_motd(dbref);
@@ -89,13 +90,6 @@ void announce_disconnect(dbref);
 char *time_format_1(long);
 char *time_format_2(long);
 
-/* Signal handlers */
-int bailout(int, int, sig_t);
-int sigshutdown(int, int, sig_t);
-#ifdef DETACH
-int logsynch(int, int, sig_t);
-#endif /* DETACH */
-
 char *logfile = LOG_FILE;
 
 int main(int argc, char **argv) {
@@ -119,58 +113,6 @@ int main(int argc, char **argv) {
 	close_sockets();
 	dump_database();
 	return 0;
-}
-
-void set_signals(void) {
-#ifdef DETACH
-	int i;
-
-	if (fork() != 0) {
-		exit(0);
-	}
-
-	for (i=getdtablesize(); i >= 0; i--) {
-		(void) close(i);
-	}
-
-	i = open("/dev/tty", O_RDWR, 0);
-	if (i != -1) {
-		ioctl(i, TIOCNOTTY, 0);
-		close(i);
-	}
-
-	freopen(logfile, "a", stderr);
-	setbuf(stderr, NULL);
-#endif /* DETACH */
-
-	/* we don't care about SIGPIPE, we notice it in select() and write() */
-	signal(SIGPIPE, SIG_IGN);
-
-	/* standard termination signals */
-	signal(SIGINT, (void (*)) sigshutdown);
-	signal(SIGTERM, (void (*)) sigshutdown);
-
-#ifdef DETACH
-	/* SIGUSR2 synchronizes the log file */
-	signal(SIGUSR2, (void (*)) logsynch);
-#else /* DETACH  */
-	signal(SIGUSR2, (void (*)) bailout);
-#endif /* DETACH */
-
-	/* catch these because we might as well */
-	signal(SIGQUIT, (void (*)) bailout);
-	signal(SIGILL, (void (*)) bailout);
-	signal(SIGTRAP, (void (*)) bailout);
-	signal(SIGIOT, (void (*)) bailout);
-	/* signal (SIGEMT, (void (*)) bailout); */
-	signal(SIGFPE, (void (*)) bailout);
-	signal(SIGBUS, (void (*)) bailout);
-	signal(SIGSEGV, (void (*)) bailout);
-	signal(SIGSYS, (void (*)) bailout);
-	signal(SIGXCPU, (void (*)) bailout);
-	signal(SIGXFSZ, (void (*)) bailout);
-	signal(SIGVTALRM, (void (*)) bailout);
-	signal(SIGUSR1, (void (*)) bailout);
 }
 
 int notify(dbref player, const char *msg) {
@@ -507,13 +449,6 @@ int process_output(struct descriptor_data *d) {
 	return 1;
 }
 
-void make_nonblocking(int s) {
-	if (fcntl(s, F_SETFL, FNDELAY) == -1) {
-		perror("make_nonblocking: fcntl");
-		panic("FNDELAY fcntl failed");
-	}
-}
-
 void freeqs(struct descriptor_data *d) {
 	struct text_block *cur, *next;
 
@@ -808,35 +743,6 @@ void boot_off(dbref player) {
 		}
 	}
 }
-
-int bailout(int sig, int code, sig_t scp) {
-	long *ptr;
-	int i;
-
-	writelog("BAILOUT: caught signal %d code %d\n", sig, code);
-	ptr = (long *) scp;
-	for (i=0; i<sizeof(sig_t); i++) {
-		writelog("  %08lx\n", *ptr);
-	}
-	panic("PANIC on spurious signal");
-	_exit(7);
-	return 0;
-}
-
-int sigshutdown(int sig, int code, sig_t scp) {
-	writelog("SHUTDOWN: on signal %d code %d\n", sig, code);
-	shutdown_flag = 1;
-	return 0;
-}
-
-#ifdef DETACH
-int logsynch(int sig, int code, sig_t scp) {
-	freopen(logfile, "a", stderr);
-	setbuf(stderr, NULL);
-	writelog("log file reopened\n");
-	return 0;
-}
-#endif /* DETACH     */
 
 void dump_users(struct descriptor_data *e, char *user) {
 	struct descriptor_data *d;
