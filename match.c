@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 /* Routines for parsing arguments */
 #include <stdlib.h>
 #include <ctype.h>

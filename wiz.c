@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 /* Wizard-only commands */
 
 #include <stdlib.h>

@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 /* Prototypes for externs not defined elsewhere */
 #include "db.h"
 

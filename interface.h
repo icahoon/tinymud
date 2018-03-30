@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 #include "db.h"
 
 /* these symbols must be defined by the interface */

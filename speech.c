@@ -1,5 +1,3 @@
-#include "copyright.h"
-
 /* Commands which involve speaking */
 
 #include <string.h>

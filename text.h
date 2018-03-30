@@ -1,7 +1,6 @@
 #ifndef TINYMUD_TEXT_H
 #define TINYMUD_TEXT_H
 
-
 typedef struct text_block {
   int               nchars;
   struct text_block *next;
