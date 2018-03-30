@@ -302,11 +302,13 @@ void do_pcreate(dbref player, char *newplayer, char *newpass) {
 	dbref ptmp;
 
 #ifdef GOD_MODE && GOD_ONLY_PCREATE
-	if (!God(player))
+	if (!God(player)) {
 		notify(player, "Only GOD can create a new player.");
+	}
 #else /* GOD_MODE && GOD_ONLY_PCREATE */
-	if (!Wizard(player))
+	if (!Wizard(player)) {
 		notify(player, "Only a Wizard can create a new player.");
+	}
 #endif /* GOD_MODE && GOD_ONLY_PCREATE */
 	else if (!*newplayer || !*newpass) {
 		notify(player, "You must specify name and password.");
