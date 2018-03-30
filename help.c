@@ -3,6 +3,7 @@
 #include "db.h"
 #include "config.h"
 #include "interface.h"
+#include "log.h"
 #include "externs.h"
 
 int spit_file(dbref player, const char *filename) {

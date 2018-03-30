@@ -23,6 +23,7 @@
 
 #include "mem.h"
 #include "text.h"
+#include "log.h"
 
 extern void make_nonblocking(int s); /* connection.c */
 

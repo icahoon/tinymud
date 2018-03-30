@@ -10,7 +10,6 @@ extern void do_create(dbref player, char *name, int cost);
 /* From game.c */
 extern void do_dump(dbref player);
 extern void do_shutdown(dbref player);
-extern void writelog(const char *, ...);
 
 /* From help.c */
 int spit_file(dbref player, const char *filename);
