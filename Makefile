@@ -53,13 +53,9 @@ cc   := clang
 #   become meanigful
 #	-DGOD_MODE		Restricts host names some commands to #1
 #	-DGOD_ONLY_PCREATE	Restricts @pcreate to player #1
-# To have logs and WHO use hostnames instead of addresses, include
-#   -DHOST_NAME.
 # To have messages for connect and disconnect, include -DCONNECT_MESSAGES.
 # To use a hashed player list for player name lookups, 
 #   include -DPLAYER_LIST.
-# To disable login-time creation of players, include -DREGISTRATION.
-#    see GOD_ONLY_PCREATE above.
 # To add the @count & @recycle command, include -DRECYCLE
 # To disable core dump on errors, include -DNODUMPCORE
 # To add the ROBOT flag (allowing robots to be excluded from some rooms
@@ -68,7 +64,7 @@ cc   := clang
 #   (currently A, An, The, You, Your, Going, Huh?), include -DNOFAKES
 # To include code for marking all things with a timestamp/usecnt,
 #   include -DTIMESTAMPS
-extra_cflags := -DGOD_PRIV -DQUIET_WHISPER -DGENDER -DHOST_NAME \
+extra_cflags := -DGOD_PRIV -DQUIET_WHISPER -DGENDER \
                 -DCONNECT_MESSAGES -DPLAYER_LIST -DROBOT_MODE \
                 -DRECYCLE -DNOFAKES -DTIMESTAMPS
 

@@ -1,6 +1,9 @@
 #ifndef TINYMUD_MEM_H
 #define TINYMUD_MEM_H
 
+#include <stdlib.h>
+#include <string.h>
+
 extern void panic(const char *);
 
 #define MALLOC(result, type, number) do { \

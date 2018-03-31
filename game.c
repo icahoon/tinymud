@@ -465,13 +465,6 @@ void process_command(dbref player, char *command) {
 					Matched("@password");
 					do_password(player, arg1, arg2);
 					break;
-#ifdef REGISTRATION
-				case 'c':
-				case 'C':
-					Matched("@pcreate");
-					do_pcreate(player, arg1, arg2);
-					break;
-#endif /* REGISTRATION */
 				default:
 					goto bad;
 				}
@@ -537,11 +530,6 @@ void process_command(dbref player, char *command) {
 					default:
 						goto bad;
 					}
-					break;
-				case 'u':
-				case 'U':
-					Matched("@tune");
-					do_tune(player, arg1, arg2);
 					break;
 				default:
 					goto bad;

@@ -2,7 +2,7 @@
 #include <string.h>
 #include <strings.h>
 
-#include "mem.h"
+#include "memutil.h"
 #include "text.h"
 
 static const char *flushed_message = "<Output Flushed>\n";
