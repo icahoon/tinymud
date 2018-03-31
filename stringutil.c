@@ -1,6 +1,6 @@
-/* String utilities */
-
 #include <ctype.h>
+
+#include "memutil.h"
 
 #define DOWNCASE(x) (isupper(x) ? tolower(x) : (x))
 
@@ -8,7 +8,6 @@ int string_compare(const char *s1, const char *s2) {
 	while (*s1 && *s2 && DOWNCASE(*s1) == DOWNCASE(*s2)) {
 		s1++, s2++;
 	}
-
 	return (DOWNCASE(*s1) - DOWNCASE(*s2));
 }
 
@@ -35,7 +34,17 @@ const char *string_match(const char *src, const char *sub) {
 			}
 		}
 	}
-
 	return 0;
+}
+
+char *strsave(const char *s) {
+	char *p;
+
+	MALLOC(p, char, strlen(s) + 1);
+
+	if (p) {
+		strcpy(p, s);
+	}
+	return p;
 }
 

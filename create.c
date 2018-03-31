@@ -295,34 +295,3 @@ void do_create(dbref player, char *name, int cost) {
 		notify(player, "Created.");
 	}
 }
-
-#ifdef REGISTRATION
-void do_pcreate(dbref player, char *newplayer, char *newpass) {
-	dbref ptmp;
-
-#ifdef GOD_MODE && GOD_ONLY_PCREATE
-	if (!God(player)) {
-		notify(player, "Only GOD can create a new player.");
-	}
-#else /* GOD_MODE && GOD_ONLY_PCREATE */
-	if (!Wizard(player)) {
-		notify(player, "Only a Wizard can create a new player.");
-	}
-#endif /* GOD_MODE && GOD_ONLY_PCREATE */
-	else if (!*newplayer || !*newpass) {
-		notify(player, "You must specify name and password.");
-	} else {
-		ptmp = create_player(newplayer, newpass);
-		if (ptmp == NOTHING) {
-			notify(player, "Either there is already a player with that name, or that name is illegal.");
-			writelog("FAILED CREATE %s by %s\n", newplayer, db[player].name);
-		} else {
-			char buf[512];
-			sprintf(buf, "%s created as object #%d.", db[ptmp].name, ptmp);
-			notify(player, buf);
-			writelog("CREATED %s(%d) by %s\n", db[ptmp].name, ptmp,
-					 db[player].name);
-		}
-	}
-}
-#endif /* REGISTRATION */

@@ -1,104 +1,49 @@
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <time.h>
-#include <sys/types.h>
-#include <sys/file.h>
 #include <sys/time.h>
-#include <signal.h>
-#include <sys/ioctl.h>
-#include <sys/wait.h>
-#include <fcntl.h>
-#include <sys/errno.h>
-#include <ctype.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
 #include <unistd.h>
+#include <sys/errno.h>
+#include <time.h>
+#include <ctype.h>
+#include <string.h>
 
 #include "db.h"
 #include "externs.h"
 #include "interface.h"
 #include "config.h"
 
-#include "mem.h"
 #include "text.h"
 #include "log.h"
-
-extern void make_nonblocking(int s); /* connection.c */
+#include "memutil.h"
+#include "timeutil.h"
+#include "stringutil.h"
+#include "connection.h"
 
 extern int        errno;
-int        shutdown_flag = 0;
+int               shutdown_flag = 0;
 
 static const char *connect_fail = "Either that player does not exist, or has a different password.\n";
-#ifndef REGISTRATION
 static const char *create_fail = "Either there is already a player with that name, or that name is illegal.\n";
-#endif /* REGISTRATION */
 static const char *shutdown_message = "Going down - Bye\n";
 
-struct descriptor_data {
-	int descriptor;
-	int connected;
-	dbref player;
-	char *output_prefix;
-	char *output_suffix;
-	int output_size;
-	struct text_queue output;
-	struct text_queue input;
-	char *raw_input;
-	char *raw_input_at;
-	long last_time;
-	long connected_at;
-	int quota;
-	struct sockaddr_in address;
-	const char *hostname;                /* 5/18/90 - Fuzzy */
-	struct descriptor_data *next;
-	struct descriptor_data *prev;
-} *descriptor_list = 0;
-
 static int sock;
-static int ndescriptors = 0;
+int ndescriptors = 0;
 
 void process_commands(void);
 void shovechars(int port);
-void shutdownsock(struct descriptor_data *d);
-struct descriptor_data *initializesock(int s, struct sockaddr_in *a,
-									   const char *hostname);
-void freeqs(struct descriptor_data *d);
-void welcome_user(struct descriptor_data *d);
 void do_motd(dbref);
-void check_connect(struct descriptor_data *d, const char *msg);
 void close_sockets();
-const char *addrout(long);
-void dump_users(struct descriptor_data *d, char *user);
 void set_signals(void);
-struct descriptor_data *new_connection(int sock);
 void parse_connect(const char *msg, char *command, char *user, char *pass);
 void set_userstring(char **userstring, const char *command);
 int do_command(struct descriptor_data *d, char *command);
-char *strsave(const char *s);
+void check_connect(struct descriptor_data *d, const char *msg);
+void dump_users(struct descriptor_data *d, char *user);
 int make_socket(int);
-int queue_string(struct descriptor_data *, const char *);
-int queue_write(struct descriptor_data *, const char *, int);
-int process_output(struct descriptor_data *d);
-int process_input(struct descriptor_data *d);
-#ifdef CONNECT_MESSAGES
-void announce_connect(dbref);
-void announce_disconnect(dbref);
-#endif /* CONNECT_MESSAGES */
-char *time_format_1(long);
-char *time_format_2(long);
-
-char *logfile = LOG_FILE;
 
 int main(int argc, char **argv) {
 	if (argc < 3) {
-		fprintf(stderr, "Usage: %s infile dumpfile [port [logfile]]\n", *argv);
+		fprintf(stderr, "Usage: %s infile dumpfile [port]\n", *argv);
 		exit(1);
-	}
-
-	if (argc > 4) {
-		logfile = argv[4];
 	}
 
 	set_signals();
@@ -128,31 +73,6 @@ int notify(dbref player, const char *msg) {
 	return (retval);
 }
 
-struct timeval timeval_sub(struct timeval now, struct timeval then) {
-	now.tv_sec -= then.tv_sec;
-	now.tv_usec -= then.tv_usec;
-	if (now.tv_usec < 0) {
-		now.tv_usec += 1000000;
-		now.tv_sec--;
-	}
-	return now;
-}
-
-int msec_diff(struct timeval now, struct timeval then) {
-	return ((now.tv_sec - then.tv_sec) * 1000
-			+ (now.tv_usec - then.tv_usec) / 1000);
-}
-
-struct timeval msec_add(struct timeval t, int x) {
-	t.tv_sec += x / 1000;
-	t.tv_usec += (x % 1000) * 1000;
-	if (t.tv_usec >= 1000000) {
-		t.tv_sec += t.tv_usec / 1000000;
-		t.tv_usec = t.tv_usec % 1000000;
-	}
-	return t;
-}
-
 struct timeval update_quotas(struct timeval last, struct timeval current) {
 	int nslices;
 	struct descriptor_data *d;
@@ -160,10 +80,10 @@ struct timeval update_quotas(struct timeval last, struct timeval current) {
 	nslices = msec_diff(current, last) / COMMAND_TIME_MSEC;
 
 	if (nslices > 0) {
-		for (d = descriptor_list; d; d = d -> next) {
-			d -> quota += COMMANDS_PER_TIME * nslices;
-			if (d -> quota > COMMAND_BURST_SIZE) {
-				d -> quota = COMMAND_BURST_SIZE;
+		for (d = descriptor_list; d; d = d->next) {
+			d->quota += COMMANDS_PER_TIME * nslices;
+			if (d->quota > COMMAND_BURST_SIZE) {
+				d->quota = COMMAND_BURST_SIZE;
 			}
 		}
 	}
@@ -183,7 +103,7 @@ void shovechars(int port) {
 
 	sock = make_socket(port);
 	maxd = sock+1;
-	gettimeofday(&last_slice, (struct timezone *) 0);
+	gettimeofday(&last_slice, (struct timezone *)0);
 
 	avail_descriptors = getdtablesize() - 4;
 
@@ -259,118 +179,6 @@ void shovechars(int port) {
 	}
 }
 
-static char hostname[128];
-
-struct descriptor_data *new_connection(int sock) {
-	int newsock;
-	struct sockaddr_in addr;
-	unsigned int addr_len;
-
-	addr_len = sizeof(addr);
-	newsock = accept(sock, (struct sockaddr *)&addr, &addr_len);
-	if (newsock < 0) {
-		return 0;
-	} else {
-		strcpy(hostname, addrout(addr.sin_addr.s_addr));
-#ifdef NOISY_LOG
-		writelog("ACCEPT from %s(%d) on descriptor %d\n",
-				 hostname,
-				 ntohs(addr.sin_port), newsock);
-#endif /* NOISY_LOG */
-		return initializesock(newsock, &addr, hostname);
-	}
-}
-
-const char *addrout(long a) {
-	/* New version: returns host names, not octets.  Uses gethostbyaddr. */
-	extern char *inet_ntoa(long);
-
-#ifdef HOST_NAME
-	struct hostent *he;
-
-	he = gethostbyaddr(&a, sizeof(a), AF_INET);
-	if (he) {
-		return he->h_name;
-	} else {
-		return inet_ntoa(a);
-	}
-#else
-	return inet_ntoa(a);
-#endif /* HOST_NAME */
-}
-
-
-void clearstrings(struct descriptor_data *d) {
-	if (d->output_prefix) {
-		FREE(d->output_prefix);
-		d->output_prefix = 0;
-	}
-	if (d->output_suffix) {
-		FREE(d->output_suffix);
-		d->output_suffix = 0;
-	}
-}
-
-void shutdownsock(struct descriptor_data *d) {
-	if (d->connected) {
-		writelog("DISCONNECT player %s(%d) %d %s\n",
-				 db[d->player].name, d->player, d->descriptor, d->hostname);
-#ifdef CONNECT_MESSAGES
-		announce_disconnect(d->player);
-#endif /* CONNECT_MESSAGES */
-	} else {
-		writelog("DISCONNECT descriptor %d never connected\n",
-				 d->descriptor);
-	}
-	clearstrings(d);
-	shutdown(d->descriptor, 2);
-	close(d->descriptor);
-	freeqs(d);
-	if (d->prev) {
-		d->prev->next = d->next;
-	} else {
-		descriptor_list = d->next;
-	}
-	if (d->next) {
-		d->next->prev = d->prev;
-	}
-	FREE(d);
-	ndescriptors--;
-}
-
-struct descriptor_data *initializesock(int s, struct sockaddr_in *a,
-									   const char *hostname) {
-	struct descriptor_data *d;
-
-	ndescriptors++;
-	MALLOC(d, struct descriptor_data, 1);
-	d->descriptor = s;
-	d->connected = 0;
-	make_nonblocking(s);
-	d->output_prefix = 0;
-	d->output_suffix = 0;
-	d->output_size = 0;
-	d->output.head = 0;
-	d->output.tail = &d->output.head;
-	d->input.head = 0;
-	d->input.tail = &d->input.head;
-	d->raw_input = 0;
-	d->raw_input_at = 0;
-	d->quota = COMMAND_BURST_SIZE;
-	d->last_time = 0;
-	d->address = *a;                        /* added 5/3/90 SCG */
-	d->hostname = alloc_string(hostname);
-	if (descriptor_list) {
-		descriptor_list->prev = d;
-	}
-	d->next = descriptor_list;
-	d->prev = NULL;
-	descriptor_list = d;
-
-	welcome_user(d);
-	return d;
-}
-
 int make_socket(int port) {
 	int s;
 	struct sockaddr_in server;
@@ -399,140 +207,6 @@ int make_socket(int port) {
 	return s;
 }
 
-int queue_write(struct descriptor_data *d, const char *b, int n) {
-	int space;
-
-	space = MAX_OUTPUT - d->output_size - n;
-	if (space < 0) {
-		d->output_size -= flush_queue(&d->output, -space);
-	}
-	add_to_queue(&d->output, b, n);
-	d->output_size += n;
-	return n;
-}
-
-int queue_string(struct descriptor_data *d, const char *s) {
-	return queue_write(d, s, strlen(s));
-}
-
-int process_output(struct descriptor_data *d) {
-	struct text_block **qp, *cur;
-	int cnt;
-
-	for (qp = &d->output.head; (cur = *qp) != 0;) {
-		cnt = write(d->descriptor, cur -> start, cur -> nchars);
-		if (cnt < 0) {
-			if (errno == EWOULDBLOCK) {
-				return 1;
-			}
-			return 0;
-		}
-		d->output_size -= cnt;
-		if (cnt == cur -> nchars) {
-			if (!cur -> next) {
-				d->output.tail = qp;
-			}
-			*qp = cur -> next;
-			free_text_block(cur);
-			continue;                /* do not adv ptr */
-		}
-		cur -> nchars -= cnt;
-		cur -> start += cnt;
-		break;
-	}
-	return 1;
-}
-
-void freeqs(struct descriptor_data *d) {
-	struct text_block *cur, *next;
-
-	cur = d->output.head;
-	while (cur) {
-		next = cur -> next;
-		free_text_block(cur);
-		cur = next;
-	}
-	d->output.head = 0;
-	d->output.tail = &d->output.head;
-
-	cur = d->input.head;
-	while (cur) {
-		next = cur -> next;
-		free_text_block(cur);
-		cur = next;
-	}
-	d->input.head = 0;
-	d->input.tail = &d->input.head;
-
-	if (d->raw_input) {
-		FREE(d->raw_input);
-	}
-	d->raw_input = 0;
-	d->raw_input_at = 0;
-}
-
-void welcome_user(struct descriptor_data *d) {
-	queue_string(d, WELCOME_MESSAGE);
-# ifdef CONNECT_FILE
-	do_connect_msg(d, CONNECT_FILE);
-# endif
-}
-
-void goodbye_user(struct descriptor_data *d) {
-	write(d->descriptor, LEAVE_MESSAGE, strlen(LEAVE_MESSAGE));
-}
-
-char *strsave(const char *s) {
-	char *p;
-
-	MALLOC(p, char, strlen(s) + 1);
-
-	if (p) {
-		strcpy(p, s);
-	}
-	return p;
-}
-
-void save_command(struct descriptor_data *d, const char *command) {
-	add_to_queue(&d->input, command, strlen(command)+1);
-}
-
-int process_input(struct descriptor_data *d) {
-	char buf[1024];
-	int got;
-	char *p, *pend, *q, *qend;
-
-	got = read(d->descriptor, buf, sizeof buf);
-	if (got <= 0) {
-		return 0;
-	}
-	if (!d->raw_input) {
-		MALLOC(d->raw_input, char, MAX_COMMAND_LEN);
-		d->raw_input_at = d->raw_input;
-	}
-	p = d->raw_input_at;
-	pend = d->raw_input + MAX_COMMAND_LEN - 1;
-	for (q=buf, qend = buf + got; q < qend; q++) {
-		if (*q == '\n') {
-			*p = '\0';
-			if (p > d->raw_input) {
-				save_command(d, d->raw_input);
-			}
-			p = d->raw_input;
-		} else if (p < pend && isascii(*q) && isprint(*q)) {
-			*p++ = *q;
-		}
-	}
-	if (p > d->raw_input) {
-		d->raw_input_at = p;
-	} else {
-		FREE(d->raw_input);
-		d->raw_input = 0;
-		d->raw_input_at = 0;
-	}
-	return 1;
-}
-
 void set_userstring(char **userstring, const char *command) {
 	if (*userstring) {
 		FREE(*userstring);
@@ -555,15 +229,15 @@ void process_commands(void) {
 		nprocessed = 0;
 		for (d = descriptor_list; d; d = dnext) {
 			dnext = d->next;
-			if (d -> quota > 0 && (t = d -> input.head)) {
-				d -> quota--;
+			if (d->quota > 0 && (t = d->input.head)) {
+				d->quota--;
 				nprocessed++;
-				if (!do_command(d, t -> start)) {
+				if (!do_command(d, t->start)) {
 					shutdownsock(d);
 				} else {
-					d -> input.head = t -> next;
-					if (!d -> input.head) {
-						d -> input.tail = &d -> input.head;
+					d->input.head = t->next;
+					if (!d->input.head) {
+						d->input.tail = &d->input.head;
 					}
 					free_text_block(t);
 				}
@@ -648,12 +322,8 @@ void check_connect(struct descriptor_data *d, const char *msg) {
 
 			do_motd(player);
 			do_look_around(player);
-#ifdef CONNECT_MESSAGES
-			announce_connect(player);
-#endif /* CONNECT_MESSAGES */
 		}
 	} else if (!strncmp(command, "cr", 2)) {
-#ifndef REGISTRATION
 		player = create_player(user, password);
 		if (player == NOTHING) {
 			queue_string(d, create_fail);
@@ -668,13 +338,7 @@ void check_connect(struct descriptor_data *d, const char *msg) {
 
 			do_motd(player);
 			do_look_around(player);
-#ifdef CONNECT_MESSAGES
-			announce_connect(player);
-#endif /* CONNECT_MESSAGES */
 		}
-#else
-		queue_string(d, REGISTER_MESSAGE);
-#endif /* REGISTRATION         */
 	} else {
 		welcome_user(d);
 	}
@@ -736,174 +400,4 @@ void boot_off(dbref player) {
 			shutdownsock(d);
 		}
 	}
-}
-
-void dump_users(struct descriptor_data *e, char *user) {
-	struct descriptor_data *d;
-	long now;
-	char buf[1024], flagbuf[16];
-	int wizard, god;
-	int counter=0;
-	int reversed, tabular;
-
-	while (*user && isspace(*user)) {
-		user++;
-	}
-	if (!*user) {
-		user = NULL;
-	}
-
-	reversed = e->connected && Flag(e->player, REVERSED_WHO);
-	tabular = e->connected && Flag(e->player, TABULAR_WHO);
-
-	(void) time(&now);
-	queue_string(e,
-				 tabular ? "Player Name          On For Idle\n" : "Current Players:\n");
-
-#ifdef GOD_MODE
-	god = wizard = e->connected && God(e->player);
-#else  /* GOD_MODE */
-	god = e->connected && God(e->player);
-	wizard = e->connected && Wizard(e->player);
-#endif /* GOD_MODE */
-
-	d = descriptor_list;
-
-	if (reversed)
-		while (d && d->next) {
-			d = d->next;
-		}
-
-	while (d) {
-		if (d->connected &&
-				++counter && /* Count everyone connected */
-				(!user || string_prefix(db[d->player].name, user))) {
-			if (god) {
-#ifdef ROBOT_MODE
-				sprintf(flagbuf, "%c%c%c  ",
-						Flag(d->player, WIZARD) ? WIZARD_MARK : ' ',
-						Flag(d->player, ROBOT)  ? ROBOT_MARK  : ' ',
-						Flag(d->player, DARK)   ? DARK_MARK   : ' ');
-#else
-				sprintf(flagbuf, "%c%c  ",
-						Flag(d->player, WIZARD) ? WIZARD_MARK : ' ',
-						Flag(d->player, DARK)   ? DARK_MARK   : ' ');
-#endif
-			} else {
-				flagbuf[0] = '\0';
-			}
-
-			if (tabular) {
-				sprintf(buf, "%-16s %10s %4s",
-						db[d->player].name,
-						time_format_1(now - d->connected_at),
-						time_format_2(now - d->last_time));
-				if (wizard)
-					sprintf(buf+strlen(buf),
-							"  %s%s", flagbuf, d->hostname);
-			} else {
-				sprintf(buf,
-						"%s idle %ld seconds",
-						db[d->player].name,
-						now - d->last_time);
-				if (wizard)
-					sprintf(buf+strlen(buf),
-							"  %sfrom host %s", flagbuf, d->hostname);
-			}
-			strcat(buf, "\n");
-			queue_string(e, buf);
-		}
-		if (reversed) {
-			d = d->prev;
-		} else {
-			d = d->next;
-		}
-	}
-
-	sprintf(buf, "%d user%s connected\n", counter,
-			counter == 1 ? " is" : "s are");
-	queue_string(e, buf);
-}
-
-char *time_format_1(long dt) {
-	register struct tm *delta;
-	static char buf[64];
-
-	delta = gmtime(&dt);
-	if (delta->tm_yday > 0)
-		sprintf(buf, "%dd %02d:%02d",
-				delta->tm_yday, delta->tm_hour, delta->tm_min);
-	else
-		sprintf(buf, "%02d:%02d",
-				delta->tm_hour, delta->tm_min);
-	return buf;
-}
-
-char *time_format_2(long dt) {
-	register struct tm *delta;
-	static char buf[64];
-
-	delta = gmtime(&dt);
-	if (delta->tm_yday > 0) {
-		sprintf(buf, "%dd", delta->tm_yday);
-	} else if (delta->tm_hour > 0) {
-		sprintf(buf, "%dh", delta->tm_hour);
-	} else if (delta->tm_min > 0) {
-		sprintf(buf, "%dm", delta->tm_min);
-	} else {
-		sprintf(buf, "%ds", delta->tm_sec);
-	}
-	return buf;
-}
-
-#ifdef CONNECT_MESSAGES
-void announce_connect(dbref player) {
-	dbref loc;
-	char buf[BUFFER_LEN];
-
-	if ((loc = getloc(player)) == NOTHING) {
-		return;
-	}
-	if (Dark(player) || Dark(loc)) {
-		return;
-	}
-
-	sprintf(buf, "%s has connected.", db[player].name);
-
-	notify_except(db[loc].contents, player, buf);
-}
-
-void announce_disconnect(dbref player) {
-	dbref loc;
-	char buf[BUFFER_LEN];
-
-	if ((loc = getloc(player)) == NOTHING) {
-		return;
-	}
-	if (Dark(player) || Dark(loc)) {
-		return;
-	}
-
-	sprintf(buf, "%s has disconnected.", db[player].name);
-
-	notify_except(db[loc].contents, player, buf);
-}
-#endif /* CONNECT_MESSAGES */
-int do_connect_msg(struct descriptor_data *d, const char *filename) {
-	FILE           *f;
-	char            buf[BUFFER_LEN];
-
-	if ((f = fopen(filename, "r")) == NULL) {
-		return (0);
-	} else {
-		while (fgets(buf, sizeof buf, f)) {
-			queue_string(d, (char *)buf);
-
-		}
-		fclose(f);
-		return (1);
-	}
-}
-
-void do_tune(const char *varname, const char *valstr) {
 }
