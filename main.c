@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdint.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <sys/errno.h>
@@ -16,6 +17,7 @@
 #include "memutil.h"
 #include "timeutil.h"
 #include "stringutil.h"
+#include "server.h"
 #include "connection.h"
 
 extern int        errno;
@@ -29,7 +31,7 @@ static int sock;
 int ndescriptors = 0;
 
 void process_commands(void);
-void shovechars(int port);
+void shovechars(server *);
 void do_motd(dbref);
 void close_sockets();
 void set_signals(void);
@@ -38,12 +40,24 @@ void set_userstring(char **userstring, const char *command);
 int do_command(struct descriptor_data *d, char *command);
 void check_connect(struct descriptor_data *d, const char *msg);
 void dump_users(struct descriptor_data *d, char *user);
-int make_socket(int);
 
 int main(int argc, char **argv) {
+	server *s;
+	uint16_t port = TINYPORT;
+	error err;
+
 	if (argc < 3) {
 		fprintf(stderr, "Usage: %s infile dumpfile [port]\n", *argv);
 		exit(1);
+	}
+	if (argc >= 4) {
+		port = atoi(argv[3]);
+	}
+
+	s = new_server();
+	err = s->init(s, port);
+	if (err != success) {
+		return err;
 	}
 
 	set_signals();
@@ -53,7 +67,7 @@ int main(int argc, char **argv) {
 	}
 
 	/* go do it */
-	shovechars(argc >= 4 ? atoi(argv[3]) : TINYPORT);
+	shovechars(s);
 	close_sockets();
 	dump_database();
 	return 0;
@@ -90,7 +104,7 @@ struct timeval update_quotas(struct timeval last, struct timeval current) {
 	return msec_add(last, nslices * COMMAND_TIME_MSEC);
 }
 
-void shovechars(int port) {
+void shovechars(server *s) {
 	fd_set input_set, output_set;
 	long now;
 	struct timeval last_slice, current_time;
@@ -101,7 +115,7 @@ void shovechars(int port) {
 	struct descriptor_data *newd;
 	int avail_descriptors;
 
-	sock = make_socket(port);
+	sock = s->socket;
 	maxd = sock+1;
 	gettimeofday(&last_slice, (struct timezone *)0);
 
@@ -177,34 +191,6 @@ void shovechars(int port) {
 			}
 		}
 	}
-}
-
-int make_socket(int port) {
-	int s;
-	struct sockaddr_in server;
-	int opt;
-
-	s = socket(AF_INET, SOCK_STREAM, 0);
-	if (s < 0) {
-		perror("creating stream socket");
-		exit(3);
-	}
-	opt = 1;
-	if (setsockopt(s, SOL_SOCKET, SO_REUSEADDR,
-				   (char *) &opt, sizeof(opt)) < 0) {
-		perror("setsockopt");
-		exit(1);
-	}
-	server.sin_family = AF_INET;
-	server.sin_addr.s_addr = INADDR_ANY;
-	server.sin_port = htons(port);
-	if (bind(s, (struct sockaddr *) & server, sizeof(server))) {
-		perror("binding stream socket");
-		close(s);
-		exit(4);
-	}
-	listen(s, 5);
-	return s;
 }
 
 void set_userstring(char **userstring, const char *command) {
