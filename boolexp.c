@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "db.h"
-#include "match.h"
-#include "externs.h"
-#include "config.h"
-#include "interface.h"
+#include "tinymud/db.h"
+#include "tinymud/match.h"
+#include "tinymud/externs.h"
+#include "tinymud/config.h"
+#include "tinymud/interface.h"
 
 int eval_boolexp(dbref player, struct boolexp *b) {
 	if (b == TRUE_BOOLEXP) {

@@ -8,12 +8,13 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "db.h"
-#include "config.h"
-#include "interface.h"
-#include "match.h"
-#include "log.h"
-#include "externs.h"
+#include "tinymud/db.h"
+#include "tinymud/config.h"
+#include "tinymud/interface.h"
+#include "tinymud/match.h"
+#include "tinymud/externs.h"
+
+#include "tinymud/log.h"
 
 /* declarations */
 static const char *dumpfile = 0;

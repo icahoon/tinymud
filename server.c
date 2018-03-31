@@ -4,9 +4,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-#include "memutil.h"
-#include "errorutil.h"
-#include "server.h"
+#include "tinymud/mem.h"
+#include "tinymud/error.h"
+#include "tinymud/server.h"
 
 static void server_delete(server *s) {
 	if (s) {

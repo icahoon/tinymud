@@ -4,12 +4,12 @@
 #include <ctype.h>
 #include <time.h>
 
-#include "db.h"
-#include "config.h"
-#include "interface.h"
-#include "match.h"
-#include "log.h"
-#include "externs.h"
+#include "tinymud/db.h"
+#include "tinymud/config.h"
+#include "tinymud/interface.h"
+#include "tinymud/match.h"
+#include "tinymud/log.h"
+#include "tinymud/externs.h"
 
 void do_teleport(dbref player, const char *arg1, const char *arg2) {
 	dbref victim;

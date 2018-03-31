@@ -2,11 +2,11 @@
 
 #include <stdlib.h>
 
-#include "db.h"
-#include "config.h"
-#include "interface.h"
-#include "match.h"
-#include "externs.h"
+#include "tinymud/db.h"
+#include "tinymud/config.h"
+#include "tinymud/interface.h"
+#include "tinymud/match.h"
+#include "tinymud/externs.h"
 
 void do_rob(dbref player, const char *what) {
 	dbref thing;

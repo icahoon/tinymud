@@ -1,35 +1,26 @@
-#include <stdio.h>
+/* #include <stdio.h> */
 #include <errno.h>
 #include <unistd.h>
-#include <fcntl.h>
 #include <string.h>
 #include <netdb.h>
 #include <ctype.h>
 #include <time.h>
 
-#include "config.h"
-#include "log.h"
-#include "memutil.h"
-#include "timeutil.h"
-#include "stringutil.h"
-#include "connection.h"
-#include "interface.h"
+#include "tinymud/config.h"
+#include "tinymud/interface.h"
+
+#include "tinymud/log.h"
+#include "tinymud/mem.h"
+#include "tinymud/time.h"
+#include "tinymud/string.h"
+#include "tinymud/connection.h"
 
 extern int ndescriptors; /* defined in main.c */
 
-extern void panic(const char *message);              /* defined in game.c */
-
-struct descriptor_data *descriptor_list = 0;
+connection *connection_list = 0;
 char hostname[128];
 
-void make_nonblocking(int s) {
-	if (fcntl(s, F_SETFL, FNDELAY) == -1) {
-		perror("make_nonblocking: fcntl");
-		panic("FNDELAY fcntl failed");
-	}
-}
-
-static const char *addrout(long a) {
+static const char *addr_out(long a) {
 	/* New version: returns host names, not octets.  Uses gethostbyaddr. */
 	extern char *inet_ntoa(long);
 
@@ -42,188 +33,141 @@ static const char *addrout(long a) {
 	return inet_ntoa(a);
 }
 
-static struct descriptor_data *initializesock(int s, struct sockaddr_in *a, const char *hostname) {
-	struct descriptor_data *d;
-
-	ndescriptors++;
-	MALLOC(d, struct descriptor_data, 1);
-	d->descriptor = s;
-	d->connected = 0;
-	make_nonblocking(s);
-	d->output_prefix = 0;
-	d->output_suffix = 0;
-	d->output_size = 0;
-	d->output.head = 0;
-	d->output.tail = &d->output.head;
-	d->input.head = 0;
-	d->input.tail = &d->input.head;
-	d->raw_input = 0;
-	d->raw_input_at = 0;
-	d->quota = COMMAND_BURST_SIZE;
-	d->last_time = 0;
-	d->address = *a;                        /* added 5/3/90 SCG */
-	d->hostname = alloc_string(hostname);
-	if (descriptor_list) {
-		descriptor_list->prev = d;
+static void clearstrings(connection *c) {
+	if (c->output_prefix) {
+		FREE(c->output_prefix);
+		c->output_prefix = 0;
 	}
-	d->next = descriptor_list;
-	d->prev = NULL;
-	descriptor_list = d;
-
-	welcome_user(d);
-	return d;
-}
-
-static void clearstrings(struct descriptor_data *d) {
-	if (d->output_prefix) {
-		FREE(d->output_prefix);
-		d->output_prefix = 0;
-	}
-	if (d->output_suffix) {
-		FREE(d->output_suffix);
-		d->output_suffix = 0;
+	if (c->output_suffix) {
+		FREE(c->output_suffix);
+		c->output_suffix = 0;
 	}
 }
 
-static void freeqs(struct descriptor_data *d) {
+static void freeqs(connection *c) {
 	struct text_block *cur, *next;
 
-	cur = d->output.head;
+	cur = c->output.head;
 	while (cur) {
 		next = cur->next;
 		free_text_block(cur);
 		cur = next;
 	}
-	d->output.head = 0;
-	d->output.tail = &d->output.head;
+	c->output.head = 0;
+	c->output.tail = &c->output.head;
 
-	cur = d->input.head;
+	cur = c->input.head;
 	while (cur) {
 		next = cur->next;
 		free_text_block(cur);
 		cur = next;
 	}
-	d->input.head = 0;
-	d->input.tail = &d->input.head;
+	c->input.head = 0;
+	c->input.tail = &c->input.head;
 
-	if (d->raw_input) {
-		FREE(d->raw_input);
+	if (c->raw_input) {
+		FREE(c->raw_input);
 	}
-	d->raw_input = 0;
-	d->raw_input_at = 0;
+	c->raw_input = 0;
+	c->raw_input_at = 0;
 }
 
-static void save_command(struct descriptor_data *d, const char *command) {
-	add_to_queue(&d->input, command, strlen(command)+1);
+static void save_command(connection *c, const char *command) {
+	add_to_queue(&c->input, command, strlen(command)+1);
 }
 
-struct descriptor_data *new_connection(int sock) {
-	int newsock;
-	struct sockaddr_in addr;
-	unsigned int addr_len;
-
-	addr_len = sizeof(addr);
-	newsock = accept(sock, (struct sockaddr *)&addr, &addr_len);
-	if (newsock < 0) {
-		return 0;
-	}
-	strcpy(hostname, addrout(addr.sin_addr.s_addr));
-	writelog("ACCEPT from %s(%d) on descriptor %d\n", hostname, ntohs(addr.sin_port), newsock);
-	return initializesock(newsock, &addr, hostname);
-}
-
-void shutdownsock(struct descriptor_data *d) {
-	if (d->connected) {
+void shutdownsock(connection *c) {
+	if (c->connected) {
 		writelog("DISCONNECT player %s(%d) %d %s\n",
-				 db[d->player].name, d->player, d->descriptor, d->hostname);
+				 db[c->player].name, c->player, c->descriptor, c->hostname);
 	} else {
 		writelog("DISCONNECT descriptor %d never connected\n",
-				 d->descriptor);
+				 c->descriptor);
 	}
-	clearstrings(d);
-	shutdown(d->descriptor, 2);
-	close(d->descriptor);
-	freeqs(d);
-	if (d->prev) {
-		d->prev->next = d->next;
+	clearstrings(c);
+	shutdown(c->descriptor, 2);
+	close(c->descriptor);
+	freeqs(c);
+	if (c->prev) {
+		c->prev->next = c->next;
 	} else {
-		descriptor_list = d->next;
+		connection_list = c->next;
 	}
-	if (d->next) {
-		d->next->prev = d->prev;
+	if (c->next) {
+		c->next->prev = c->prev;
 	}
-	FREE(d);
+	FREE(c);
 	ndescriptors--;
 }
 
-int queue_write(struct descriptor_data *d, const char *b, int n) {
+int queue_write(connection *c, const char *b, int n) {
 	int space;
 
-	space = MAX_OUTPUT - d->output_size - n;
+	space = MAX_OUTPUT - c->output_size - n;
 	if (space < 0) {
-		d->output_size -= flush_queue(&d->output, -space);
+		c->output_size -= flush_queue(&c->output, -space);
 	}
-	add_to_queue(&d->output, b, n);
-	d->output_size += n;
+	add_to_queue(&c->output, b, n);
+	c->output_size += n;
 	return n;
 }
 
-int queue_string(struct descriptor_data *d, const char *s) {
-	return queue_write(d, s, strlen(s));
+int queue_string(connection *c, const char *s) {
+	return queue_write(c, s, strlen(s));
 }
 
-int process_input(struct descriptor_data *d) {
+int process_input(connection *c) {
 	char buf[1024];
 	int got;
 	char *p, *pend, *q, *qend;
 
-	got = read(d->descriptor, buf, sizeof buf);
+	got = read(c->descriptor, buf, sizeof buf);
 	if (got <= 0) {
 		return 0;
 	}
-	if (!d->raw_input) {
-		MALLOC(d->raw_input, char, MAX_COMMAND_LEN);
-		d->raw_input_at = d->raw_input;
+	if (!c->raw_input) {
+		MALLOC(c->raw_input, char, MAX_COMMAND_LEN);
+		c->raw_input_at = c->raw_input;
 	}
-	p = d->raw_input_at;
-	pend = d->raw_input + MAX_COMMAND_LEN - 1;
+	p = c->raw_input_at;
+	pend = c->raw_input + MAX_COMMAND_LEN - 1;
 	for (q=buf, qend = buf + got; q < qend; q++) {
 		if (*q == '\n') {
 			*p = '\0';
-			if (p > d->raw_input) {
-				save_command(d, d->raw_input);
+			if (p > c->raw_input) {
+				save_command(c, c->raw_input);
 			}
-			p = d->raw_input;
+			p = c->raw_input;
 		} else if (p < pend && isascii(*q) && isprint(*q)) {
 			*p++ = *q;
 		}
 	}
-	if (p > d->raw_input) {
-		d->raw_input_at = p;
+	if (p > c->raw_input) {
+		c->raw_input_at = p;
 	} else {
-		FREE(d->raw_input);
-		d->raw_input = 0;
-		d->raw_input_at = 0;
+		FREE(c->raw_input);
+		c->raw_input = 0;
+		c->raw_input_at = 0;
 	}
 	return 1;
 }
 
-int process_output(struct descriptor_data *d) {
+int process_output(connection *c) {
 	struct text_block **qp, *cur;
 	int cnt;
 
-	for (qp = &d->output.head; (cur = *qp) != 0;) {
-		cnt = write(d->descriptor, cur->start, cur->nchars);
+	for (qp = &c->output.head; (cur = *qp) != 0;) {
+		cnt = write(c->descriptor, cur->start, cur->nchars);
 		if (cnt < 0) {
 			if (errno == EWOULDBLOCK) {
 				return 1;
 			}
 			return 0;
 		}
-		d->output_size -= cnt;
+		c->output_size -= cnt;
 		if (cnt == cur->nchars) {
 			if (!cur->next) {
-				d->output.tail = qp;
+				c->output.tail = qp;
 			}
 			*qp = cur->next;
 			free_text_block(cur);
@@ -236,16 +180,16 @@ int process_output(struct descriptor_data *d) {
 	return 1;
 }
 
-void welcome_user(struct descriptor_data *d) {
-	queue_string(d, WELCOME_MESSAGE);
+void welcome_user(connection *c) {
+	queue_string(c, WELCOME_MESSAGE);
 }
 
-void goodbye_user(struct descriptor_data *d) {
-	write(d->descriptor, LEAVE_MESSAGE, strlen(LEAVE_MESSAGE));
+void goodbye_user(connection *c) {
+	write(c->descriptor, LEAVE_MESSAGE, strlen(LEAVE_MESSAGE));
 }
 
-void dump_users(struct descriptor_data *e, char *user) {
-	struct descriptor_data *d;
+void dump_users(connection *e, char *user) {
+	connection *c;
 	long now;
 	char buf[1024], flagbuf[16];
 	int wizard, god;
@@ -272,27 +216,27 @@ void dump_users(struct descriptor_data *e, char *user) {
 	wizard = e->connected && Wizard(e->player);
 #endif /* GOD_MODE */
 
-	d = descriptor_list;
+	c = connection_list;
 
 	if (reversed)
-		while (d && d->next) {
-			d = d->next;
+		while (c && c->next) {
+			c = c->next;
 		}
 
-	while (d) {
-		if (d->connected &&
+	while (c) {
+		if (c->connected &&
 				++counter && /* Count everyone connected */
-				(!user || string_prefix(db[d->player].name, user))) {
+				(!user || string_prefix(db[c->player].name, user))) {
 			if (god) {
 #ifdef ROBOT_MODE
 				sprintf(flagbuf, "%c%c%c  ",
-						Flag(d->player, WIZARD) ? WIZARD_MARK : ' ',
-						Flag(d->player, ROBOT)  ? ROBOT_MARK  : ' ',
-						Flag(d->player, DARK)   ? DARK_MARK   : ' ');
+						Flag(c->player, WIZARD) ? WIZARD_MARK : ' ',
+						Flag(c->player, ROBOT)  ? ROBOT_MARK  : ' ',
+						Flag(c->player, DARK)   ? DARK_MARK   : ' ');
 #else
 				sprintf(flagbuf, "%c%c  ",
-						Flag(d->player, WIZARD) ? WIZARD_MARK : ' ',
-						Flag(d->player, DARK)   ? DARK_MARK   : ' ');
+						Flag(c->player, WIZARD) ? WIZARD_MARK : ' ',
+						Flag(c->player, DARK)   ? DARK_MARK   : ' ');
 #endif
 			} else {
 				flagbuf[0] = '\0';
@@ -300,28 +244,28 @@ void dump_users(struct descriptor_data *e, char *user) {
 
 			if (tabular) {
 				sprintf(buf, "%-16s %10s %4s",
-						db[d->player].name,
-						time_format_1(now - d->connected_at),
-						time_format_2(now - d->last_time));
+						db[c->player].name,
+						time_format_1(now - c->connected_at),
+						time_format_2(now - c->last_time));
 				if (wizard)
 					sprintf(buf+strlen(buf),
-							"  %s%s", flagbuf, d->hostname);
+							"  %s%s", flagbuf, c->hostname);
 			} else {
 				sprintf(buf,
 						"%s idle %ld seconds",
-						db[d->player].name,
-						now - d->last_time);
+						db[c->player].name,
+						now - c->last_time);
 				if (wizard)
 					sprintf(buf+strlen(buf),
-							"  %sfrom host %s", flagbuf, d->hostname);
+							"  %sfrom host %s", flagbuf, c->hostname);
 			}
 			strcat(buf, "\n");
 			queue_string(e, buf);
 		}
 		if (reversed) {
-			d = d->prev;
+			c = c->prev;
 		} else {
-			d = d->next;
+			c = c->next;
 		}
 	}
 
@@ -329,7 +273,7 @@ void dump_users(struct descriptor_data *e, char *user) {
 	queue_string(e, buf);
 }
 
-int do_connect_msg(struct descriptor_data *d, const char *filename) {
+int do_connect_msg(connection *c, const char *filename) {
 	FILE           *f;
 	char            buf[BUFFER_LEN];
 
@@ -337,10 +281,59 @@ int do_connect_msg(struct descriptor_data *d, const char *filename) {
 		return (0);
 	} else {
 		while (fgets(buf, sizeof buf, f)) {
-			queue_string(d, (char *)buf);
+			queue_string(c, (char *)buf);
 
 		}
 		fclose(f);
 		return (1);
 	}
+}
+
+static error connection_init(connection *c, sock_t s) {
+	int newsock;
+	struct sockaddr_in addr;
+	unsigned int addr_len;
+
+	addr_len = sizeof(addr);
+	newsock = accept(s, (struct sockaddr *)&addr, &addr_len);
+	if (newsock < 0) {
+		return !success;
+	}
+
+	strcpy(hostname, addr_out(addr.sin_addr.s_addr));
+	writelog("ACCEPT from %s(%d) on descriptor %d\n", hostname, ntohs(addr.sin_port), newsock);
+
+	ndescriptors++;
+	c->descriptor = newsock;
+	set_nonblocking(newsock);
+	c->connected = false;
+	c->output_prefix = 0;
+	c->output_suffix = 0;
+	c->output_size = 0;
+	c->output.head = 0;
+	c->output.tail = &c->output.head;
+	c->input.head = 0;
+	c->input.tail = &c->input.head;
+	c->raw_input = 0;
+	c->raw_input_at = 0;
+	c->quota = COMMAND_BURST_SIZE;
+	c->last_time = 0;
+	c->address = addr;
+	c->hostname = alloc_string(hostname);
+	if (connection_list) {
+		connection_list->prev = c;
+	}
+	c->next = connection_list;
+	c->prev = NULL;
+	connection_list = c;
+
+	welcome_user(c);
+	return success;
+}
+
+connection *new_connection() {
+	connection *c;
+	MALLOC(c, connection, 1);
+	c->init = connection_init;
+	return c;
 }

@@ -4,10 +4,10 @@
 #include <strings.h>
 #include <ctype.h>
 
-#include "db.h"
-#include "interface.h"
-#include "config.h"
-#include "externs.h"
+#include "tinymud/db.h"
+#include "tinymud/interface.h"
+#include "tinymud/config.h"
+#include "tinymud/externs.h"
 
 void pronoun_substitute(char *result, dbref player, const char *str);
 

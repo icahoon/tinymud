@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdint.h>
+#include <errno.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <sys/errno.h>
@@ -7,20 +8,19 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "db.h"
-#include "externs.h"
-#include "interface.h"
-#include "config.h"
+#include "tinymud/db.h"
+#include "tinymud/externs.h"
+#include "tinymud/interface.h"
+#include "tinymud/config.h"
 
-#include "text.h"
-#include "log.h"
-#include "memutil.h"
-#include "timeutil.h"
-#include "stringutil.h"
-#include "server.h"
-#include "connection.h"
+#include "tinymud/text.h"
+#include "tinymud/log.h"
+#include "tinymud/mem.h"
+#include "tinymud/time.h"
+#include "tinymud/string.h"
+#include "tinymud/server.h"
+#include "tinymud/connection.h"
 
-extern int        errno;
 int               shutdown_flag = 0;
 
 static const char *connect_fail = "Either that player does not exist, or has a different password.\n";
@@ -37,9 +37,9 @@ void close_sockets();
 void set_signals(void);
 void parse_connect(const char *msg, char *command, char *user, char *pass);
 void set_userstring(char **userstring, const char *command);
-int do_command(struct descriptor_data *d, char *command);
-void check_connect(struct descriptor_data *d, const char *msg);
-void dump_users(struct descriptor_data *d, char *user);
+int do_command(connection *d, char *command);
+void check_connect(connection *d, const char *msg);
+void dump_users(connection *d, char *user);
 
 int main(int argc, char **argv) {
 	server *s;
@@ -54,13 +54,14 @@ int main(int argc, char **argv) {
 		port = atoi(argv[3]);
 	}
 
+	set_signals();
+
 	s = new_server();
 	err = s->init(s, port);
 	if (err != success) {
 		return err;
 	}
 
-	set_signals();
 	if (init_game(argv[1], argv[2]) < 0) {
 		writelog("INIT: Couldn't load %s!\n", argv[1]);
 		exit(2);
@@ -74,10 +75,10 @@ int main(int argc, char **argv) {
 }
 
 int notify(dbref player, const char *msg) {
-	struct descriptor_data *d;
+	connection *d;
 	int retval = 0;
 
-	for (d = descriptor_list; d; d = d->next) {
+	for (d = connection_list; d; d = d->next) {
 		if (d->connected && d->player == player) {
 			queue_string(d, msg);
 			queue_write(d, "\n", 1);        /* Fuzzy: why make two packets? */
@@ -89,12 +90,12 @@ int notify(dbref player, const char *msg) {
 
 struct timeval update_quotas(struct timeval last, struct timeval current) {
 	int nslices;
-	struct descriptor_data *d;
+	connection *d;
 
 	nslices = msec_diff(current, last) / COMMAND_TIME_MSEC;
 
 	if (nslices > 0) {
-		for (d = descriptor_list; d; d = d->next) {
+		for (d = connection_list; d; d = d->next) {
 			d->quota += COMMANDS_PER_TIME * nslices;
 			if (d->quota > COMMAND_BURST_SIZE) {
 				d->quota = COMMAND_BURST_SIZE;
@@ -111,8 +112,8 @@ void shovechars(server *s) {
 	struct timeval next_slice;
 	struct timeval timeout, slice_timeout;
 	int maxd;
-	struct descriptor_data *d, *dnext;
-	struct descriptor_data *newd;
+	connection *d, *dnext;
+	connection *c;
 	int avail_descriptors;
 
 	sock = s->socket;
@@ -140,7 +141,7 @@ void shovechars(server *s) {
 		if (ndescriptors < avail_descriptors) {
 			FD_SET(sock, &input_set);
 		}
-		for (d = descriptor_list; d; d=d->next) {
+		for (d = connection_list; d; d=d->next) {
 			if (d->input.head) {
 				timeout = slice_timeout;
 			} else {
@@ -158,23 +159,24 @@ void shovechars(server *s) {
 				return;
 			}
 		} else {
-			(void) time(&now);
+			error err;
+
+			time(&now);
 			if (FD_ISSET(sock, &input_set)) {
-				if (!(newd = new_connection(sock))) {
-					if (errno
-							&& errno != EINTR
-							&& errno != EMFILE
-							&& errno != ENFILE) {
+				c = new_connection();
+				err = c->init(c, sock);
+				if (err != success) {
+					if (errno && errno != EINTR && errno != EMFILE && errno != ENFILE) {
 						perror("new_connection");
 						return;
 					}
 				} else {
-					if (newd->descriptor >= maxd) {
-						maxd = newd->descriptor + 1;
+					if (c->descriptor >= maxd) {
+						maxd = c->descriptor + 1;
 					}
 				}
 			}
-			for (d = descriptor_list; d; d = dnext) {
+			for (d = connection_list; d; d = dnext) {
 				dnext = d->next;
 				if (FD_ISSET(d->descriptor, &input_set)) {
 					d->last_time = now;
@@ -202,18 +204,18 @@ void set_userstring(char **userstring, const char *command) {
 		command++;
 	}
 	if (*command) {
-		*userstring = strsave(command);
+		*userstring = strdup(command);
 	}
 }
 
 void process_commands(void) {
 	int nprocessed;
-	struct descriptor_data *d, *dnext;
+	connection *d, *dnext;
 	struct text_block *t;
 
 	do {
 		nprocessed = 0;
-		for (d = descriptor_list; d; d = dnext) {
+		for (d = connection_list; d; d = dnext) {
 			dnext = d->next;
 			if (d->quota > 0 && (t = d->input.head)) {
 				d->quota--;
@@ -232,7 +234,7 @@ void process_commands(void) {
 	} while (nprocessed > 0);
 }
 
-int do_command(struct descriptor_data *d, char *command) {
+int do_command(connection *d, char *command) {
 	if (!strcmp(command, QUIT_COMMAND)) {
 		goodbye_user(d);
 		return 0;
@@ -285,7 +287,7 @@ int do_command(struct descriptor_data *d, char *command) {
 	return 1;
 }
 
-void check_connect(struct descriptor_data *d, const char *msg) {
+void check_connect(connection *d, const char *msg) {
 	char command[MAX_COMMAND_LEN];
 	char user[MAX_COMMAND_LEN];
 	char password[MAX_COMMAND_LEN];
@@ -360,9 +362,9 @@ void parse_connect(const char *msg, char *command, char *user, char *pass) {
 }
 
 void close_sockets(void) {
-	struct descriptor_data *d, *dnext;
+	connection *d, *dnext;
 
-	for (d = descriptor_list; d; d = dnext) {
+	for (d = connection_list; d; d = dnext) {
 		dnext = d->next;
 		write(d->descriptor, shutdown_message, strlen(shutdown_message));
 		if (shutdown(d->descriptor, 2) < 0) {
@@ -378,8 +380,8 @@ void emergency_shutdown(void) {
 }
 
 void boot_off(dbref player) {
-	struct descriptor_data *d, *dnext;
-	for (d = descriptor_list; d; d = dnext) {
+	connection *d, *dnext;
+	for (d = connection_list; d; d = dnext) {
 		dnext = d->next;
 		if (d->connected && d->player == player) {
 			process_output(d);
