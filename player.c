@@ -1,9 +1,9 @@
 #include <string.h>
 
-#include "db.h"
-#include "config.h"
-#include "interface.h"
-#include "externs.h"
+#include "tinymud/db.h"
+#include "tinymud/config.h"
+#include "tinymud/interface.h"
+#include "tinymud/externs.h"
 
 #ifndef PLAYER_LIST
 /* don't use this, it's expensive */

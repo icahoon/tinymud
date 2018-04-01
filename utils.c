@@ -1,4 +1,4 @@
-#include "db.h"
+#include "tinymud/db.h"
 
 /* remove the first occurence of what in list headed by first */
 dbref remove_first(dbref first, dbref what) {

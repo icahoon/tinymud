@@ -1,6 +1,6 @@
 #include <ctype.h>
 
-#include "memutil.h"
+#include "tinymud/mem.h"
 
 #define DOWNCASE(x) (isupper(x) ? tolower(x) : (x))
 
@@ -36,15 +36,3 @@ const char *string_match(const char *src, const char *sub) {
 	}
 	return 0;
 }
-
-char *strsave(const char *s) {
-	char *p;
-
-	MALLOC(p, char, strlen(s) + 1);
-
-	if (p) {
-		strcpy(p, s);
-	}
-	return p;
-}
-

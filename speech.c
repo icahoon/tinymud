@@ -2,12 +2,12 @@
 
 #include <string.h>
 
-#include "db.h"
-#include "interface.h"
-#include "match.h"
-#include "config.h"
-#include "log.h"
-#include "externs.h"
+#include "tinymud/db.h"
+#include "tinymud/interface.h"
+#include "tinymud/match.h"
+#include "tinymud/config.h"
+#include "tinymud/log.h"
+#include "tinymud/externs.h"
 
 /* this function is a kludge for regenerating messages split by '=' */
 const char *reconstruct_message(const char *arg1, const char *arg2) {

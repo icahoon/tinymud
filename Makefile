@@ -66,6 +66,7 @@ cc   := clang
 #   include -DTIMESTAMPS
 extra_cflags := -DGOD_PRIV -DQUIET_WHISPER -DGENDER \
                 -DCONNECT_MESSAGES -DPLAYER_LIST -DROBOT_MODE \
-                -DRECYCLE -DNOFAKES -DTIMESTAMPS
+                -DRECYCLE -DNOFAKES -DTIMESTAMPS \
+                -I$(shell cd ..; pwd -P)
 
 include $(root)/build/build.mk

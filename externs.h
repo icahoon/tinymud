@@ -1,5 +1,5 @@
 /* Prototypes for externs not defined elsewhere */
-#include "db.h"
+#include "tinymud/db.h"
 
 /* From create.c */
 extern void do_open(dbref player, const char *direction, const char *linkto);

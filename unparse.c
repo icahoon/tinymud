@@ -1,10 +1,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "db.h"
-#include "externs.h"
-#include "config.h"
-#include "interface.h"
+#include "tinymud/db.h"
+#include "tinymud/externs.h"
+#include "tinymud/config.h"
+#include "tinymud/interface.h"
 
 static const char *unparse_flags(dbref thing, dbref player) {
 	static char buf[BUFFER_LEN];

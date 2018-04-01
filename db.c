@@ -4,9 +4,9 @@
 #include <time.h>
 #include <ctype.h>
 
-#include "db.h"
-#include "config.h"
-#include "externs.h"
+#include "tinymud/db.h"
+#include "tinymud/config.h"
+#include "tinymud/externs.h"
 
 struct object *db = 0;
 dbref db_top = 0;

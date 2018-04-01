@@ -1,8 +1,9 @@
 #include <signal.h>
 #include <unistd.h>
 
-extern int shutdown_flag;                 /* defined in main.c */
-extern void writelog(const char *, ...);  /* defined in game.c */
+#include "tinymud/log.h"
+#include "tinymud/server.h"
+
 extern void panic(const char *message);   /* defined in game.c */
 
 static void graceful_exit(int);
@@ -47,6 +48,6 @@ static void hard_exit(int signum) {
 
 static void graceful_exit(int signum) {
 	writelog("SHUTDOWN: on signal %d code %d\n", signum);
-	shutdown_flag = 1;
+	server_shutdown = 1;
 }
 

@@ -1,4 +1,4 @@
-#include "db.h"
+#include "tinymud/db.h"
 
 /* these symbols must be defined by the interface */
 extern int notify(dbref player, const char *msg);

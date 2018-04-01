@@ -1,10 +1,10 @@
 /* Commands that create new objects */
 
-#include "db.h"
-#include "config.h"
-#include "interface.h"
-#include "log.h"
-#include "externs.h"
+#include "tinymud/db.h"
+#include "tinymud/config.h"
+#include "tinymud/interface.h"
+#include "tinymud/log.h"
+#include "tinymud/externs.h"
 
 /* utility for open and link */
 static dbref parse_linkable_room(dbref player, object_flag_type thing,

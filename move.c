@@ -1,11 +1,11 @@
 #include <stdlib.h>
 #include <time.h>
 
-#include "db.h"
-#include "config.h"
-#include "interface.h"
-#include "match.h"
-#include "externs.h"
+#include "tinymud/db.h"
+#include "tinymud/config.h"
+#include "tinymud/interface.h"
+#include "tinymud/match.h"
+#include "tinymud/externs.h"
 
 void moveto(dbref what, dbref where) {
 	dbref loc;

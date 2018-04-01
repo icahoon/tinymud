@@ -1,4 +1,4 @@
-#include "db.h"
+#include "tinymud/db.h"
 
 /* match functions */
 /* Usage: init_match(player, name, type); match_this(); match_that(); ... */

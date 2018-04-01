@@ -3,12 +3,13 @@
 #include <string.h>
 #include <ctype.h>
 
-#include "db.h"
-#include "config.h"
-#include "match.h"
-#include "interface.h"
-#include "log.h"
-#include "externs.h"
+#include "tinymud/db.h"
+#include "tinymud/config.h"
+#include "tinymud/match.h"
+#include "tinymud/interface.h"
+#include "tinymud/externs.h"
+
+#include "tinymud/log.h"
 
 #define FREE_STRING(X) X = ((X) ? (free ((void *) (X)), NULL) : NULL)
 

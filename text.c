@@ -2,8 +2,8 @@
 #include <string.h>
 #include <strings.h>
 
-#include "memutil.h"
-#include "text.h"
+#include "tinymud/mem.h"
+#include "tinymud/text.h"
 
 static const char *flushed_message = "<Output Flushed>\n";
 

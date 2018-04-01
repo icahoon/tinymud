@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-#include "db.h"
-#include "config.h"
-#include "match.h"
-#include "externs.h"
+#include "tinymud/db.h"
+#include "tinymud/config.h"
+#include "tinymud/match.h"
+#include "tinymud/externs.h"
 
 #define DOWNCASE(x) (isupper(x) ? tolower(x) : (x))
 
