@@ -39,7 +39,6 @@ struct connection {
 extern connection *connection_list;
 extern char hostname[128];
 
-extern void shutdownsock(connection *c);
 extern int queue_write(connection *c, const char *b, int n);
 extern int queue_string(connection *c, const char *s);
 extern int process_input(connection *c);
