@@ -6,7 +6,12 @@
 
 #include "tinymud/mem.h"
 #include "tinymud/error.h"
+#include "tinymud/connection.h"
 #include "tinymud/server.h"
+
+bool server_shutdown = false;
+int sock;
+int ndescriptors = 0;
 
 static void server_delete(server *s) {
 	if (s) {
@@ -19,6 +24,7 @@ static error server_init(server *s, uint16_t port) {
 	struct sockaddr_in addr;
 
 	s->port = port;
+	s->nsockets = 0;
 
 	s->socket = socket(AF_INET, SOCK_STREAM, 0);
 	if (s < 0) {
@@ -58,4 +64,21 @@ server *new_server() {
 	s->init = server_init;
 	s->close = server_close;
 	return s;
+}
+/* ---- */
+
+static const char *shutdown_message = "Going down - Bye\n";
+
+void close_sockets(void) {
+	connection *c, *cnext;
+
+	for (c = connection_list; c; c = cnext) {
+		cnext = c->next;
+		write(c->descriptor, shutdown_message, strlen(shutdown_message));
+		if (shutdown(c->descriptor, SHUT_RDWR) < 0) {
+			perror("shutdown");
+		}
+		close(c->descriptor);
+	}
+	close(sock);
 }

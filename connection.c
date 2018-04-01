@@ -76,30 +76,6 @@ static void save_command(connection *c, const char *command) {
 	add_to_queue(&c->input, command, strlen(command)+1);
 }
 
-void shutdownsock(connection *c) {
-	if (c->connected) {
-		writelog("DISCONNECT player %s(%d) %d %s\n",
-				 db[c->player].name, c->player, c->descriptor, c->hostname);
-	} else {
-		writelog("DISCONNECT descriptor %d never connected\n",
-				 c->descriptor);
-	}
-	clearstrings(c);
-	shutdown(c->descriptor, 2);
-	close(c->descriptor);
-	freeqs(c);
-	if (c->prev) {
-		c->prev->next = c->next;
-	} else {
-		connection_list = c->next;
-	}
-	if (c->next) {
-		c->next->prev = c->prev;
-	}
-	FREE(c);
-	ndescriptors--;
-}
-
 int queue_write(connection *c, const char *b, int n) {
 	int space;
 
@@ -331,9 +307,34 @@ static error connection_init(connection *c, sock_t s) {
 	return success;
 }
 
+static void connection_close(connection *c) {
+	if (c->connected) {
+		writelog("DISCONNECT player %s(%d) %d %s\n",
+				 db[c->player].name, c->player, c->descriptor, c->hostname);
+	} else {
+		writelog("DISCONNECT descriptor %d never connected\n",
+				 c->descriptor);
+	}
+	clearstrings(c);
+	shutdown(c->descriptor, SHUT_RDWR);
+	close(c->descriptor);
+	freeqs(c);
+	if (c->prev) {
+		c->prev->next = c->next;
+	} else {
+		connection_list = c->next;
+	}
+	if (c->next) {
+		c->next->prev = c->prev;
+	}
+	FREE(c);
+	ndescriptors--;
+}
+
 connection *new_connection() {
 	connection *c;
 	MALLOC(c, connection, 1);
 	c->init = connection_init;
+	c->close = connection_close;
 	return c;
 }

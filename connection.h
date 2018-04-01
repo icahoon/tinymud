@@ -33,6 +33,7 @@ struct connection {
 	connection         *prev;
   
   error (*init)(connection *, sock_t);
+  void (*close)(connection *);
 };
 
 extern connection *connection_list;

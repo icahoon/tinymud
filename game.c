@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <ctype.h>
 #include <signal.h>
 #include <sys/wait.h>
@@ -15,6 +16,7 @@
 #include "tinymud/externs.h"
 
 #include "tinymud/log.h"
+#include "tinymud/server.h"
 
 /* declarations */
 static const char *dumpfile = 0;
@@ -40,7 +42,7 @@ void do_shutdown(dbref player) {
 	if (Wizard(player)) {
 		writelog("SHUTDOWN: by %s(%d)\n", db[player].name, player);
 		fflush(stderr);
-		shutdown_flag = 1;
+		server_shutdown = true;
 	} else {
 		notify(player, "Your delusions of grandeur have been duly noted.");
 	}
