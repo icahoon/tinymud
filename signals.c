@@ -47,7 +47,7 @@ static void hard_exit(int signum) {
 }
 
 static void graceful_exit(int signum) {
-	writelog("SHUTDOWN: on signal %d code %d\n", signum);
+	writelog("SHUTDOWN: on signal %d\n", signum);
 	server_shutdown = 1;
 }
 
