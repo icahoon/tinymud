@@ -22,6 +22,7 @@ struct server {
   void (*delete)(server *s);
   error (*init)(server *s, uint16_t port);
   void (*close)(server *s);
+  void (*run)(server *s);
 };
 
 extern server *new_server();

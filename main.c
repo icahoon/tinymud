@@ -29,7 +29,6 @@ static const char *create_fail = "Either there is already a player with that nam
 
 
 void process_commands(void);
-void shovechars(server *);
 void do_motd(dbref);
 void parse_connect(const char *msg, char *command, char *user, char *pass);
 void set_userstring(char **userstring, const char *command);
@@ -64,116 +63,10 @@ int main(int argc, char **argv) {
 	}
 
 	/* go do it */
-	shovechars(s);
-	close_sockets();
+	s->run(s);
+	s->close(s);
 	dump_database();
 	return 0;
-}
-
-struct timeval update_quotas(struct timeval last, struct timeval current) {
-	int nslices;
-	connection *d;
-
-	nslices = msec_diff(current, last) / COMMAND_TIME_MSEC;
-
-	if (nslices > 0) {
-		for (d = connection_list; d; d = d->next) {
-			d->quota += COMMANDS_PER_TIME * nslices;
-			if (d->quota > COMMAND_BURST_SIZE) {
-				d->quota = COMMAND_BURST_SIZE;
-			}
-		}
-	}
-	return msec_add(last, nslices * COMMAND_TIME_MSEC);
-}
-
-void shovechars(server *s) {
-	fd_set input_set, output_set;
-	long now;
-	struct timeval last_slice, current_time;
-	struct timeval next_slice;
-	struct timeval timeout, slice_timeout;
-	int maxd;
-	connection *c, *cnext;
-	int avail_descriptors;
-
-	sock = s->socket;
-	maxd = sock+1;
-	gettimeofday(&last_slice, (struct timezone *)0);
-
-	avail_descriptors = getdtablesize() - 4;
-
-	while (!server_shutdown) {
-		gettimeofday(&current_time, (struct timezone *) 0);
-		last_slice = update_quotas(last_slice, current_time);
-
-		process_commands();
-
-		if (server_shutdown) {
-			break;
-		}
-		timeout.tv_sec = 1000;
-		timeout.tv_usec = 0;
-		next_slice = msec_add(last_slice, COMMAND_TIME_MSEC);
-		slice_timeout = timeval_sub(next_slice, current_time);
-
-		FD_ZERO(&input_set);
-		FD_ZERO(&output_set);
-		if (ndescriptors < avail_descriptors) {
-			FD_SET(sock, &input_set);
-		}
-		for (c = connection_list; c; c = c->next) {
-			if (c->input.head) {
-				timeout = slice_timeout;
-			} else {
-				FD_SET(c->descriptor, &input_set);
-			}
-			if (c->output.head) {
-				FD_SET(c->descriptor, &output_set);
-			}
-		}
-
-		if (select(maxd, &input_set, &output_set,
-				   (fd_set *) 0, &timeout) < 0) {
-			if (errno != EINTR) {
-				perror("select");
-				return;
-			}
-		} else {
-			error err;
-
-			time(&now);
-			if (FD_ISSET(sock, &input_set)) {
-				c = new_connection();
-				err = c->init(c, sock);
-				if (err != success) {
-					if (errno && errno != EINTR && errno != EMFILE && errno != ENFILE) {
-						perror("new_connection");
-						return;
-					}
-				} else {
-					if (c->descriptor >= maxd) {
-						maxd = c->descriptor + 1;
-					}
-				}
-			}
-			for (c = connection_list; c; c = cnext) {
-				cnext = c->next;
-				if (FD_ISSET(c->descriptor, &input_set)) {
-					c->last_time = now;
-					if (!process_input(c)) {
-						c->close(c);
-						continue;
-					}
-				}
-				if (FD_ISSET(c->descriptor, &output_set)) {
-					if (!process_output(c)) {
-						c->close(c);
-					}
-				}
-			}
-		}
-	}
 }
 
 void set_userstring(char **userstring, const char *command) {
