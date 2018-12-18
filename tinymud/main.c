@@ -4,7 +4,6 @@
 #include <errno.h>
 #include <sys/time.h>
 #include <unistd.h>
-#include <sys/errno.h>
 #include <time.h>
 #include <ctype.h>
 #include <string.h>

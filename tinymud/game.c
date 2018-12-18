@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <errno.h>
 #include <ctype.h>
 #include <signal.h>
 #include <sys/wait.h>
@@ -160,6 +161,7 @@ int init_game(const char *infile, const char *outfile) {
 	FILE *f;
 
 	if ((f = fopen(infile, "r")) == NULL) {
+		printf("Error : errno='%s'.\n", strerror(errno));
 		return -1;
 	}
 

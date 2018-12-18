@@ -68,7 +68,7 @@ static const char *unparse_flags(dbref thing, dbref player) {
 }
 
 const char *unparse_object(dbref player, dbref loc) {
-	static char buf[BUFFER_LEN];
+	static char buf[BUFFER_LEN*2];
 
 	switch (loc) {
 	case NOTHING:

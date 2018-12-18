@@ -54,7 +54,7 @@ endif
 warnings := -Wall -Wuninitialized -Werror
 #warnings += -pedantic
 
-cflags   += -fPIC $(warnings)
+cflags   += -static -fPIC $(warnings)
 cxxflags := $(cflags)
 
 ifdef unit_test

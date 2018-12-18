@@ -1,0 +1,11 @@
+.git
+.gitignore
+
+Dockerfile
+Makefile
+
+LICENSE
+TODO.md
+README.md
+
+tags

@@ -48,7 +48,7 @@ static struct boolexp *parse_boolexp_F(void) {
 	struct boolexp *b;
 	char *p;
 	char buf[BUFFER_LEN];
-	char msg[BUFFER_LEN];
+	char msg[BUFFER_LEN*2];
 
 	skip_whitespace();
 	switch (*parsebuf) {
