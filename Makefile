@@ -1,32 +1,25 @@
-repo_url := icahoon
-
-name           := tinymud
-version        := 1.0
-
-alpine_version := 3.8
-arch           := amd64
-
-image_name    := $(repo_url)/$(name)
-image_version := $(version)
+repo_url         := icahoon
+name             := tinymud
+image_name       := $(repo_url)/$(name)
+semantic_version := $(shell git describe --match "v[0-9]*" --tags)
+image_version    := $(semantic_version:v%=%)
 
 
 .PHONY: $(name)
 $(name): Dockerfile
-	docker build \
+	sudo docker build \
 		--rm --force-rm \
-		--build-arg alpine_version=$(alpine_version) \
-		--build-arg arch=$(arch) \
 		-t $(image_name):$(image_version) \
 		-t $(image_name):latest \
 		.
 
 .PHONY: push
 push:
-	docker login && \
-	docker push $(repo_url)/$(name)
+	sudo docker login && \
+	sudo docker push $(image_name)
 
 .PHONY: clean
 clean:
-	$(MAKE) -C tinymud $@
-	docker image rm -f $(image_name):$(image_version) 2>/dev/null
-	docker image rm -f $(image_name):latest 2>/dev/null
+	-$(MAKE) -C tinymud $@
+	-sudo docker image rm -f $(image_name):$(image_version) 2>/dev/null
+	-sudo docker image rm -f $(image_name):latest 2>/dev/null
