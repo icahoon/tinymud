@@ -20,6 +20,6 @@ push:
 
 .PHONY: clean
 clean:
-	-$(MAKE) -C tinymud $@
+	-$(MAKE) -C src $@
 	-sudo docker image rm -f $(image_name):$(image_version) 2>/dev/null
 	-sudo docker image rm -f $(image_name):latest 2>/dev/null

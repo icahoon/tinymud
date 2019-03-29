@@ -88,7 +88,7 @@ arflags := crsu
 
 # Linker
 ifndef ld
-	ld    := $(cc)
+  ld    := $(cc)
 endif
 ldflags := $(extra_ldflags)
 

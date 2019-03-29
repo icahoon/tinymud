@@ -7,7 +7,7 @@
 
 FROM    icahoon/cbuild AS builder
 COPY    --chown=arcade:arcade . ${HOME}
-RUN     cd tinymud && make
+RUN     cd src && make clean && make
 
 #___ tinymud _________________________________________________________________
 
