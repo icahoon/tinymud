@@ -36,7 +36,9 @@ options   :=
 export _bin_ := $(_root_)/bin
 export _lib_ := $(_root_)/lib
 
-export name := $(notdir ${PWD})
+ifndef name
+  export name := $(notdir ${PWD})
+endif
 
 variables += _root_ _build_ name
 
