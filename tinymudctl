@@ -1,0 +1,31 @@
+#!/bin/bash
+#
+# Copyright (c) 2018, Ian Cahoon <icahoon@gmail.com>
+# All rights reserved.
+#
+
+function init() {
+  if [[ ! -f "/db/arcade.db" ]]; then
+    if [[ ! -f "./tinybase.db" ]]; then
+      error "Error: cannot find tinybase.db"
+      exit 1
+    fi
+    cp "./tinybase.db" "/db/arcade.db"
+  fi
+
+  if [[ -f "/db/arcade.db.dump" ]]; then
+    mv "/db/arcade.db" "/db/arcade.db.$(date +%Y-%m-%d-%H-%M-%S)"
+    mv "/db/arcade.db.dump" "/db/arcade.db"
+  fi
+}
+
+function start() {
+  exec ./bin/tinymud "/db/arcade.db" "/db/arcade.db.dump" "4201"
+}
+
+function main() {
+  init
+  start
+}
+
+main "$@"
