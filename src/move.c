@@ -3,6 +3,7 @@
 
 #include "db.h"
 #include "config.h"
+#include "notify.h"
 #include "interface.h"
 #include "match.h"
 #include "externs.h"

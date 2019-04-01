@@ -6,6 +6,7 @@
 #include "config.h"
 #include "interface.h"
 #include "match.h"
+#include "notify.h"
 #include "externs.h"
 
 void do_rob(dbref player, const char *what) {

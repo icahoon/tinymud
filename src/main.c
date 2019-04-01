@@ -16,6 +16,7 @@
 #include "text.h"
 #include "log.h"
 #include "mem.h"
+#include "notify.h"
 #include "time.h"
 #include "string.h"
 #include "signals.h"
@@ -226,34 +227,4 @@ void parse_connect(const char *msg, char *command, char *user, char *pass) {
 		*p++ = *msg++;
 	}
 	*p = '\0';
-}
-
-void emergency_shutdown(void) {
-	close_sockets();
-}
-
-void boot_off(dbref player) {
-	connection *c, *cnext;
-	for (c = connection_list; c; c = cnext) {
-		cnext = c->next;
-		if (c->connected && c->player == player) {
-			process_output(c);
-			c->close(c);
-		}
-	}
-}
-
-/* this is awful */
-int notify(dbref player, const char *msg) {
-	connection *c;
-	int retval = 0;
-
-	for (c = connection_list; c; c = c->next) {
-		if (c->connected && c->player == player) {
-			queue_string(c, msg);
-			queue_write(c, "\n", 1);        /* Fuzzy: why make two packets? */
-			retval = 1;
-		}
-	}
-	return (retval);
 }

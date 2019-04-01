@@ -6,6 +6,7 @@
 
 #include "db.h"
 #include "interface.h"
+#include "notify.h"
 #include "config.h"
 #include "externs.h"
 

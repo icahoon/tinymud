@@ -14,13 +14,14 @@
 #include "config.h"
 #include "interface.h"
 #include "match.h"
+#include "notify.h"
 #include "externs.h"
 
 #include "log.h"
 #include "server.h"
 
 /* declarations */
-static const char *dumpfile = 0;
+const char *dumpfile = 0;
 static int epoch = 0;
 static int alarm_triggered = 0;
 static int alarm_block = 0;
@@ -75,43 +76,6 @@ static void dump_database_internal(void) {
 		}
 	} else {
 		perror(tmpfile);
-	}
-}
-
-void panic(const char *message) {
-	char panicfile[2048];
-	FILE *f;
-	int i;
-
-	writelog("PANIC: %s\n", message);
-
-	/* turn off signals */
-	for (i = 0; i < NSIG; i++) {
-		signal(i, SIG_IGN);
-	}
-
-	/* shut down interface */
-	emergency_shutdown();
-
-	/* dump panic file */
-	sprintf(panicfile, "%s.PANIC", dumpfile);
-	if ((f = fopen(panicfile, "w")) == NULL) {
-		perror("CANNOT OPEN PANIC FILE, YOU LOSE:");
-#ifndef NODUMPCORE
-		signal(SIGILL, SIG_DFL);
-		abort();
-#endif /* NODUMPCORE */
-		_exit(135);
-	} else {
-		writelog("DUMPING: %s\n", panicfile);
-		db_write(f);
-		fclose(f);
-		writelog("DUMPING: %s (done)\n", panicfile);
-#ifndef NODUMPCORE
-		signal(SIGILL, SIG_DFL);
-		abort();
-#endif /* NODUMPCORE */
-		_exit(136);
 	}
 }
 

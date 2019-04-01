@@ -115,8 +115,6 @@ extern const char *unparse_boolexp(dbref player, struct boolexp *);
 
 /* From interface.c */
 struct descriptor_data;
-extern void boot_off(dbref player);
-extern int notify(dbref player2, const char *msg);
 
 /* From player_list.c */
 extern void clear_players(void);

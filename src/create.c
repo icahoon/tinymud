@@ -5,6 +5,7 @@
 #include "interface.h"
 #include "log.h"
 #include "externs.h"
+#include "notify.h"
 
 /* utility for open and link */
 static dbref parse_linkable_room(dbref player, object_flag_type thing,

@@ -5,9 +5,11 @@
 #include <time.h>
 
 #include "db.h"
+#include "connection.h"
 #include "config.h"
 #include "interface.h"
 #include "match.h"
+#include "notify.h"
 #include "log.h"
 #include "externs.h"
 
@@ -434,6 +436,21 @@ void do_newpassword(dbref player, const char *name, const char *password) {
 		notify(player, "Password changed.");
 		sprintf(buf, "Your password has been changed by %s.", db[player].name);
 		notify(victim, buf);
+	}
+}
+
+/* boot_off walks through the connection_list (global connection.h) and if
+ * it finds a connection that matches the given player, it processes the
+ * remainint output, then closes the connection, booting the player.
+ */
+void boot_off(dbref player) {
+	connection *c, *cnext;
+	for (c = connection_list; c; c = cnext) {
+		cnext = c->next;
+		if (c->connected && c->player == player) {
+			process_output(c);
+			c->close(c);
+		}
 	}
 }
 

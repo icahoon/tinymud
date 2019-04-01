@@ -6,6 +6,7 @@
 #include "db.h"
 #include "config.h"
 #include "match.h"
+#include "notify.h"
 #include "interface.h"
 #include "externs.h"
 

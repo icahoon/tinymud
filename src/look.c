@@ -8,6 +8,7 @@
 #include "interface.h"
 #include "match.h"
 #include "externs.h"
+#include "notify.h"
 
 #include "log.h"
 

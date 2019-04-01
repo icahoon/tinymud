@@ -16,18 +16,41 @@
 
 extern void process_commands(void); /* main.c */
 
-static const char *shutdown_message = "Going down - Bye\n";
+const char *shutdown_message = "Going down - Bye\n";
 
 bool server_shutdown = false;
 int sock;
 int ndescriptors = 0;
 
+/* Forward declarations
+ */
+static error server_init(server *s, uint16_t port);
+static void server_delete(server *s);
+static void server_close(server *s);
+static void server_run(server *s);
+
+/* new_server creates a new server.
+ */
+server *new_server() {
+	server *s;
+	MALLOC(s, server, 1);
+	s->init = server_init;
+	s->delete = server_delete;
+	s->close = server_close;
+	s->run = server_run;
+	return s;
+}
+
+/* server_delete frees the given server.
+ */
 static void server_delete(server *s) {
 	if (s) {
 		FREE(s);
 	}
 }
 
+/* server_init ...
+ */
 static error server_init(server *s, uint16_t port) {
 	int opt;
 	struct sockaddr_in addr;
@@ -62,6 +85,8 @@ static error server_init(server *s, uint16_t port) {
 	return success;
 }
 
+/* server_close ...
+ */
 static void server_close(server *s) {
 	connection *c, *cnext;
 
@@ -76,23 +101,10 @@ static void server_close(server *s) {
 	close(s->socket);
 }
 
-static struct timeval update_quotas(struct timeval last, struct timeval current) {
-	int nslices;
-	connection *c;
+static struct timeval update_quotas(struct timeval last, struct timeval current);
 
-	nslices = msec_diff(current, last) / COMMAND_TIME_MSEC;
-
-	if (nslices > 0) {
-		for (c = connection_list; c; c = c->next) {
-			c->quota += COMMANDS_PER_TIME * nslices;
-			if (c->quota > COMMAND_BURST_SIZE) {
-				c->quota = COMMAND_BURST_SIZE;
-			}
-		}
-	}
-	return msec_add(last, nslices * COMMAND_TIME_MSEC);
-}
-
+/* server_run ...
+ */
 static void server_run(server *s) {
 	fd_set input_set, output_set;
 	long now;
@@ -182,27 +194,19 @@ static void server_run(server *s) {
 	}
 }
 
-server *new_server() {
-	server *s;
-	MALLOC(s, server, 1);
-	s->delete = server_delete;
-	s->init = server_init;
-	s->close = server_close;
-	s->run = server_run;
-	return s;
-}
-/* ---- */
+static struct timeval update_quotas(struct timeval last, struct timeval current) {
+	int nslices;
+	connection *c;
 
-void close_sockets(void) {
-	connection *c, *cnext;
+	nslices = msec_diff(current, last) / COMMAND_TIME_MSEC;
 
-	for (c = connection_list; c; c = cnext) {
-		cnext = c->next;
-		write(c->descriptor, shutdown_message, strlen(shutdown_message));
-		if (shutdown(c->descriptor, SHUT_RDWR) < 0) {
-			perror("shutdown");
+	if (nslices > 0) {
+		for (c = connection_list; c; c = c->next) {
+			c->quota += COMMANDS_PER_TIME * nslices;
+			if (c->quota > COMMAND_BURST_SIZE) {
+				c->quota = COMMAND_BURST_SIZE;
+			}
 		}
-		close(c->descriptor);
 	}
-	close(sock);
+	return msec_add(last, nslices * COMMAND_TIME_MSEC);
 }

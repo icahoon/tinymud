@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "db.h"
+#include "notify.h"
 #include "config.h"
 #include "interface.h"
 #include "externs.h"

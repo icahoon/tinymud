@@ -5,6 +5,7 @@
 #include "db.h"
 #include "interface.h"
 #include "match.h"
+#include "notify.h"
 #include "config.h"
 #include "log.h"
 #include "externs.h"

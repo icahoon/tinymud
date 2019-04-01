@@ -1,7 +1,6 @@
 #include "db.h"
 
 /* these symbols must be defined by the interface */
-extern int notify(dbref player, const char *msg);
 extern int shutdown_flag; /* if non-zero, interface should shut down */
 extern void emergency_shutdown(void);
 

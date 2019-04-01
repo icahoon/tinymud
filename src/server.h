@@ -7,6 +7,7 @@
 #include "error.h"
 #include "socket.h"
 
+extern const char *shutdown_message;
 extern bool server_shutdown;
 extern int sock;
 extern int ndescriptors;
